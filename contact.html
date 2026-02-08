@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | Kent Natural Foods Co-op</title>
+    <meta name="description" content="Get in touch with Kent Natural Foods Co-op. Find our location, hours, and ways to reach us.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-text">KNFC</span>
+                    <span class="logo-tagline">Kent Natural Foods Co-op</span>
+                </a>
+                <nav class="main-nav">
+                    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <ul class="nav-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="membership.html">Membership</a></li>
+                        <li><a href="volunteer.html">Volunteer</a></li>
+                        <li><a href="contact.html" class="active">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Contact Us</h1>
+                <p>We'd love to hear from you</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="contact-grid">
+                    <div class="contact-form">
+                        <h2>Send Us a Message</h2>
+                        <p class="mb-2">Have a question, suggestion, or feedback? Fill out the form below and we'll get back to you.</p>
+
+                        <!--
+                            NOTE: This form needs a backend to process submissions.
+                            Options for static hosting:
+                            1. Use Formspree (formspree.io) - free tier available
+                            2. Use Netlify Forms (if hosting on Netlify)
+                            3. Use Google Forms embedded
+
+                            To use Formspree, replace the action URL:
+                            action="https://formspree.io/f/YOUR_FORM_ID"
+                        -->
+                        <form action="#" method="POST" id="contact-form">
+                            <div class="form-group">
+                                <label for="name">Your Name *</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="subject">Subject *</label>
+                                <select id="subject" name="subject" required>
+                                    <option value="">Select a topic...</option>
+                                    <option value="general">General Inquiry</option>
+                                    <option value="membership">Membership Questions</option>
+                                    <option value="volunteer">Volunteering</option>
+                                    <option value="products">Product Request/Question</option>
+                                    <option value="feedback">Feedback or Suggestion</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Your Message *</label>
+                                <textarea id="message" name="message" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                    </div>
+
+                    <div class="contact-info-section">
+                        <div class="contact-info-card">
+                            <h3>Visit Us</h3>
+                            <p>
+                                <!-- UPDATE with actual address -->
+                                <strong>Kent Natural Foods Co-op</strong><br>
+                                [Street Address]<br>
+                                Kent, OH [ZIP]
+                            </p>
+                            <div class="map-container">
+                                <!--
+                                    To add a Google Map:
+                                    1. Go to Google Maps and find your location
+                                    2. Click "Share" then "Embed a map"
+                                    3. Copy the iframe code and paste it here
+
+                                    Example:
+                                    <iframe src="https://www.google.com/maps/embed?..."
+                                            width="100%" height="200" style="border:0;"
+                                            allowfullscreen="" loading="lazy">
+                                    </iframe>
+                                -->
+                                [Google Map embed goes here]
+                            </div>
+                        </div>
+
+                        <div class="contact-info-card">
+                            <h3>Store Hours</h3>
+                            <!-- UPDATE with actual hours -->
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td>Monday</td>
+                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
+                                </tr>
+                                <tr>
+                                    <td>Tuesday</td>
+                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
+                                </tr>
+                                <tr>
+                                    <td>Wednesday</td>
+                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
+                                </tr>
+                                <tr>
+                                    <td>Thursday</td>
+                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
+                                </tr>
+                                <tr>
+                                    <td>Friday</td>
+                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
+                                </tr>
+                                <tr>
+                                    <td>Saturday</td>
+                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
+                                </tr>
+                                <tr>
+                                    <td>Sunday</td>
+                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="contact-info-card">
+                            <h3>Get in Touch</h3>
+                            <p>
+                                <!-- UPDATE with actual contact info -->
+                                <strong>Phone:</strong><br>
+                                <a href="tel:[PHONE]">[Phone Number]</a>
+                            </p>
+                            <p>
+                                <strong>Email:</strong><br>
+                                <a href="mailto:[EMAIL]">[Email Address]</a>
+                            </p>
+                            <p>
+                                <strong>Social Media:</strong><br>
+                                <!-- UPDATE with actual social links -->
+                                <a href="[FACEBOOK_URL]" target="_blank">Facebook</a><br>
+                                <a href="[INSTAGRAM_URL]" target="_blank">Instagram</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section alt-bg">
+            <div class="container">
+                <h2 class="text-center">Quick Answers</h2>
+                <div class="content-grid mt-2">
+                    <div class="content-card">
+                        <h3>Looking to become a member?</h3>
+                        <p>Visit our <a href="membership.html">Membership page</a> to learn about benefits and how to join.</p>
+                    </div>
+                    <div class="content-card">
+                        <h3>Interested in volunteering?</h3>
+                        <p>Check out our <a href="volunteer.html">Volunteer page</a> for current opportunities.</p>
+                    </div>
+                    <div class="content-card">
+                        <h3>Looking for a specific product?</h3>
+                        <p>Browse our <a href="products.html">Products page</a> to see what's currently available.</p>
+                    </div>
+                    <div class="content-card">
+                        <h3>Want to learn more about us?</h3>
+                        <p>Visit our <a href="about.html">About page</a> to learn about our history and mission.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Kent Natural Foods Co-op</h4>
+                    <p>A member-owned cooperative serving our community with natural, organic, and local foods.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="membership.html">Membership</a></li>
+                        <li><a href="volunteer.html">Volunteer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>
+                        [Street Address]<br>
+                        Kent, OH [ZIP]<br>
+                        <a href="tel:[PHONE]">[Phone Number]</a><br>
+                        <a href="mailto:[EMAIL]">[Email Address]</a>
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Hours</h4>
+                    <p>
+                        Mon-Fri: [Hours]<br>
+                        Saturday: [Hours]<br>
+                        Sunday: [Hours]
+                    </p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> Kent Natural Foods Co-op. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products | Kent Natural Foods Co-op</title>
+    <meta name="description" content="Browse the current inventory at Kent Natural Foods Co-op. Search for natural, organic, and local products.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-text">KNFC</span>
+                    <span class="logo-tagline">Kent Natural Foods Co-op</span>
+                </a>
+                <nav class="main-nav">
+                    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <ul class="nav-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="products.html" class="active">Products</a></li>
+                        <li><a href="membership.html">Membership</a></li>
+                        <li><a href="volunteer.html">Volunteer</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Our Products</h1>
+                <p>Browse our current inventory of natural and organic products</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="content-grid mb-2">
+                    <div>
+                        <h2>What We Carry</h2>
+                        <p>KNFC offers a wide variety of natural, organic, and locally-sourced products including:</p>
+                        <ul>
+                            <li><strong>Fresh Produce:</strong> Local and organic fruits and vegetables</li>
+                            <li><strong>Bulk Foods:</strong> Grains, nuts, seeds, spices, and more</li>
+                            <li><strong>Dairy & Alternatives:</strong> Milk, cheese, yogurt, and plant-based options</li>
+                            <li><strong>Groceries:</strong> Pantry staples, snacks, and specialty items</li>
+                            <li><strong>Frozen Foods:</strong> Healthy frozen meals and ingredients</li>
+                            <li><strong>Supplements:</strong> Vitamins, minerals, and herbal products</li>
+                            <li><strong>Body Care:</strong> Natural soaps, lotions, and personal care items</li>
+                            <li><strong>Household:</strong> Eco-friendly cleaning products</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h2>Special Requests</h2>
+                        <div class="content-card">
+                            <p>Can't find what you're looking for? We're happy to try to order it for you!</p>
+                            <p>Simply ask a staff member or <a href="contact.html">contact us</a> with your request. If it's available through our distributors and meets our product standards, we'll do our best to bring it in.</p>
+                        </div>
+
+                        <h3 class="mt-2">Local Producers</h3>
+                        <p>We're proud to support local farmers and producers. Look for our "Local" tags in store to find products from:</p>
+                        <ul>
+                            <!-- UPDATE with actual local producer names -->
+                            <li>[Local Farm Name 1]</li>
+                            <li>[Local Farm Name 2]</li>
+                            <li>[Local Producer Name]</li>
+                            <li>And more!</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr style="border: none; border-top: 1px solid #e8e4dc; margin: 2rem 0;">
+
+                <h2>Current Inventory</h2>
+                <p class="mb-2">Search our current stock below. This list is updated weekly from our point-of-sale system.</p>
+
+                <!-- Search and Filter Controls -->
+                <div class="products-controls">
+                    <input type="text"
+                           id="product-search"
+                           class="search-input"
+                           placeholder="Search products..."
+                           aria-label="Search products">
+
+                    <select id="category-filter" class="filter-select" aria-label="Filter by department">
+                        <option value="">All Departments</option>
+                        <!-- Departments will be populated by JavaScript -->
+                    </select>
+
+                    <select id="stock-filter" class="filter-select" aria-label="Filter by stock status">
+                        <option value="">All Stock Levels</option>
+                        <option value="in-stock">In Stock</option>
+                        <option value="low-stock">Low Stock</option>
+                        <option value="out-of-stock">Out of Stock</option>
+                    </select>
+                </div>
+
+                <!-- Inventory Table -->
+                <div class="inventory-table-wrapper">
+                    <div id="loading" class="loading-spinner">
+                        Loading inventory...
+                    </div>
+                    <table class="inventory-table" id="inventory-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>UPC</th>
+                                <th>Item Name</th>
+                                <th>Department</th>
+                                <th>Remaining</th>
+                                <th>Sales Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-body">
+                            <!-- Inventory rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="last-updated" id="last-updated"></p>
+
+                <div class="content-card mt-2">
+                    <h3>Note About Inventory</h3>
+                    <p>Our online inventory is updated weekly and may not reflect real-time stock levels. For the most accurate availability, please call the store or visit us in person. Some items may be sold out between updates.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Looking for Something Specific?</h2>
+                    <p>Can't find what you need? Contact us and we'll help you find it or order it for you.</p>
+                    <div class="cta-buttons">
+                        <a href="contact.html" class="btn btn-primary">Contact Us</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Kent Natural Foods Co-op</h4>
+                    <p>A member-owned cooperative serving our community with natural, organic, and local foods.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="membership.html">Membership</a></li>
+                        <li><a href="volunteer.html">Volunteer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>
+                        [Street Address]<br>
+                        Kent, OH [ZIP]<br>
+                        <a href="tel:[PHONE]">[Phone Number]</a><br>
+                        <a href="mailto:[EMAIL]">[Email Address]</a>
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Hours</h4>
+                    <p>
+                        Mon-Fri: [Hours]<br>
+                        Saturday: [Hours]<br>
+                        Sunday: [Hours]
+                    </p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> Kent Natural Foods Co-op. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/inventory.js"></script>
+</body>
+</html>
