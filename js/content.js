@@ -1,0 +1,318 @@
+/**
+ * KNFC Website - Dynamic Content
+ * Kent Natural Foods Co-op
+ *
+ * Loads four content types from Google Sheets (published as CSV) or local CSV files:
+ *   - Announcements  → homepage bulletin board
+ *   - Sales Flyer    → PDF embed on products page
+ *   - Staff Picks    → department highlights on products page
+ *   - Education      → learn & explore resources on products page
+ *
+ * SETUP — switching from local demo files to Google Sheets:
+ * =========================================================
+ * 1. Create one Google Spreadsheet with four tabs named:
+ *    Announcements | Sales | Highlights | Education
+ * 2. For each tab: File > Share > Publish to web > select that tab > CSV > Publish
+ * 3. Copy each published URL and paste it into the GS_* constants below
+ * 4. Change CONTENT_SOURCE from 'local' to 'google-sheets'
+ *
+ * SALES FLYER — uploading a PDF:
+ * ================================
+ * 1. Upload your flyer PDF to Google Drive
+ * 2. Right-click > Share > Anyone with the link can view
+ * 3. Copy the share link (looks like: drive.google.com/file/d/FILEID/view)
+ * 4. Paste that link into the PDF_URL column of the Sales tab
+ */
+
+// ============================================
+// CONFIGURATION — edit these values
+// ============================================
+
+// 'local' uses CSV files in /data folder (for demo / development)
+// 'google-sheets' uses the published Google Sheet URLs below
+const CONTENT_SOURCE = 'local';
+
+// Local CSV paths (active when CONTENT_SOURCE = 'local')
+const LOCAL_ANNOUNCEMENTS = 'data/announcements.csv';
+const LOCAL_SALES         = 'data/sales.csv';
+const LOCAL_HIGHLIGHTS    = 'data/highlights.csv';
+const LOCAL_EDUCATION     = 'data/education.csv';
+
+// Google Sheets published CSV URLs (active when CONTENT_SOURCE = 'google-sheets')
+const GS_ANNOUNCEMENTS = 'YOUR_ANNOUNCEMENTS_TAB_CSV_URL';
+const GS_SALES         = 'YOUR_SALES_TAB_CSV_URL';
+const GS_HIGHLIGHTS    = 'YOUR_HIGHLIGHTS_TAB_CSV_URL';
+const GS_EDUCATION     = 'YOUR_EDUCATION_TAB_CSV_URL';
+
+// ============================================
+// END CONFIGURATION
+// ============================================
+
+function contentUrl(local, gs) {
+    return CONTENT_SOURCE === 'google-sheets' ? gs : local;
+}
+
+// ============================================
+// CSV UTILITIES
+// ============================================
+
+async function fetchCSV(path) {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error(`Could not fetch ${path} (${res.status})`);
+    return res.text();
+}
+
+function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, '').trim());
+    return lines.slice(1)
+        .map(line => {
+            const vals = parseCSVLine(line);
+            const row = {};
+            headers.forEach((h, i) => {
+                row[h] = (vals[i] || '').replace(/^"|"$/g, '').trim();
+            });
+            return row;
+        })
+        .filter(row => Object.values(row).some(v => v !== ''));
+}
+
+function parseCSVLine(line) {
+    const values = [];
+    let cur = '';
+    let inQuotes = false;
+    for (const ch of line) {
+        if (ch === '"') { inQuotes = !inQuotes; }
+        else if (ch === ',' && !inQuotes) { values.push(cur); cur = ''; }
+        else { cur += ch; }
+    }
+    values.push(cur);
+    return values;
+}
+
+// Escape text for safe HTML insertion
+function esc(text) {
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+}
+
+// Only allow http/https URLs — reject javascript:, data:, etc.
+function safeUrl(raw) {
+    const u = (raw || '').trim();
+    return (u.startsWith('https://') || u.startsWith('http://')) ? u : '';
+}
+
+// Detect unfilled placeholder values in the CSV templates
+function isPlaceholder(str) {
+    return !str || str.includes('YOUR_') || str.includes('REPLACE_') || str === '#';
+}
+
+// Convert a Google Drive share URL to an embeddable preview URL
+function driveEmbedUrl(shareUrl) {
+    if (shareUrl.includes('drive.google.com/file/d/')) {
+        return shareUrl.replace(/\/(view|edit)(\?.*)?$/, '/preview');
+    }
+    return shareUrl;
+}
+
+// ============================================
+// ANNOUNCEMENTS
+// Targets: #announcement-cards on index.html
+// CSV columns: Title | Body | Date | Category | Active
+// ============================================
+
+async function loadAnnouncements() {
+    const container = document.getElementById('announcement-cards');
+    if (!container) return;
+
+    try {
+        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_ANNOUNCEMENTS, GS_ANNOUNCEMENTS)))
+            .filter(r => (r.Active || '').toLowerCase() === 'yes')
+            .sort((a, b) => new Date(b.Date) - new Date(a.Date))
+            .slice(0, 3);
+
+        if (!rows.length) {
+            container.innerHTML = '<p class="no-content">No announcements right now. Check back soon!</p>';
+            return;
+        }
+
+        container.innerHTML = rows.map(r => `
+            <article class="announcement-card">
+                <div class="announcement-meta">
+                    <span class="announcement-date">${esc(r.Date)}</span>
+                    ${r.Category ? `<span class="announcement-badge cat-${esc(r.Category.toLowerCase())}">${esc(r.Category)}</span>` : ''}
+                </div>
+                <h3>${esc(r.Title)}</h3>
+                <p>${esc(r.Body)}</p>
+            </article>
+        `).join('');
+
+    } catch (e) {
+        console.error('Announcements error:', e);
+        container.innerHTML = '<p class="no-content">Unable to load announcements.</p>';
+    }
+}
+
+// ============================================
+// SALES FLYER — PDF EMBED
+// Targets: #sales-flyer-container on products.html
+// CSV columns: Title | PDF_URL | Start_Date | End_Date | Active
+//
+// PDF_URL should be a Google Drive share link:
+//   https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+// The script converts it to an embeddable /preview URL automatically.
+// ============================================
+
+async function loadSalesFlyer() {
+    const container = document.getElementById('sales-flyer-container');
+    if (!container) return;
+
+    try {
+        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_SALES, GS_SALES)))
+            .filter(r => (r.Active || '').toLowerCase() === 'yes');
+
+        if (!rows.length) {
+            container.innerHTML = '<p class="no-content">No active sales flyer right now. Check back soon!</p>';
+            return;
+        }
+
+        const flyer = rows[0];
+        const rawUrl = flyer.PDF_URL || '';
+        const pdfUrl = safeUrl(rawUrl);
+
+        // Show a placeholder card if the URL hasn't been filled in yet
+        if (isPlaceholder(rawUrl) || !pdfUrl) {
+            container.innerHTML = `
+                <div class="flyer-placeholder">
+                    <div class="flyer-placeholder-icon">&#128240;</div>
+                    <h3>${esc(flyer.Title || 'Sales Flyer')}</h3>
+                    ${flyer.End_Date ? `<p>Valid through <strong>${esc(flyer.End_Date)}</strong></p>` : ''}
+                    <p class="placeholder-note">
+                        To display the flyer: upload your PDF to Google Drive, set sharing to
+                        "Anyone with the link," then paste the share URL into the
+                        <code>PDF_URL</code> column of the <code>sales.csv</code> file
+                        (or the Sales tab in your Google Sheet).
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        const embedUrl = driveEmbedUrl(pdfUrl);
+        container.innerHTML = `
+            <div class="flyer-header">
+                <div class="flyer-header-text">
+                    <h3>${esc(flyer.Title)}</h3>
+                    ${flyer.End_Date ? `<p class="flyer-dates">Valid through ${esc(flyer.End_Date)}</p>` : ''}
+                </div>
+                <a href="${pdfUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+                    Open Full Flyer &#8599;
+                </a>
+            </div>
+            <div class="pdf-embed-wrapper">
+                <iframe src="${embedUrl}"
+                        class="sales-pdf-embed"
+                        loading="lazy"
+                        title="Sales Flyer — ${esc(flyer.Title)}"></iframe>
+            </div>
+        `;
+
+    } catch (e) {
+        console.error('Sales flyer error:', e);
+        container.innerHTML = '<p class="no-content">Unable to load sales flyer.</p>';
+    }
+}
+
+// ============================================
+// STAFF PICKS / DEPARTMENT HIGHLIGHTS
+// Targets: #staff-picks-container on products.html
+// CSV columns: Department | Item_Name | Description | Why_We_Love_It | Active
+// ============================================
+
+async function loadHighlights() {
+    const container = document.getElementById('staff-picks-container');
+    if (!container) return;
+
+    try {
+        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_HIGHLIGHTS, GS_HIGHLIGHTS)))
+            .filter(r => (r.Active || '').toLowerCase() === 'yes');
+
+        if (!rows.length) {
+            const section = container.closest('.staff-picks-section');
+            if (section) section.style.display = 'none';
+            return;
+        }
+
+        container.innerHTML = rows.map(r => `
+            <div class="highlight-card">
+                <span class="highlight-dept">${esc(r.Department)}</span>
+                <h4>${esc(r.Item_Name)}</h4>
+                <p>${esc(r.Description)}</p>
+                ${r.Why_We_Love_It ? `<p class="why-love">&#10084;&nbsp;${esc(r.Why_We_Love_It)}</p>` : ''}
+            </div>
+        `).join('');
+
+    } catch (e) {
+        console.error('Highlights error:', e);
+        const section = container.closest('.staff-picks-section');
+        if (section) section.style.display = 'none';
+    }
+}
+
+// ============================================
+// EDUCATIONAL CONTENT
+// Targets: #education-container on products.html
+// CSV columns: Title | Description | Category | Link | Date | Active
+//
+// Link can be a Google Doc published URL, a PDF link, or any https:// URL.
+// Leave Link blank to show the card without a button.
+// ============================================
+
+async function loadEducation() {
+    const container = document.getElementById('education-container');
+    if (!container) return;
+
+    try {
+        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_EDUCATION, GS_EDUCATION)))
+            .filter(r => (r.Active || '').toLowerCase() === 'yes')
+            .sort((a, b) => new Date(b.Date) - new Date(a.Date));
+
+        if (!rows.length) {
+            const section = container.closest('.education-section');
+            if (section) section.style.display = 'none';
+            return;
+        }
+
+        container.innerHTML = rows.map(r => {
+            const link = safeUrl(r.Link);
+            return `
+                <div class="education-card">
+                    <div class="education-meta">
+                        <span class="edu-category">${esc(r.Category)}</span>
+                        <span class="edu-date">${esc(r.Date)}</span>
+                    </div>
+                    <h4>${esc(r.Title)}</h4>
+                    <p>${esc(r.Description)}</p>
+                    ${link ? `<a href="${link}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">Read More &#8599;</a>` : ''}
+                </div>
+            `;
+        }).join('');
+
+    } catch (e) {
+        console.error('Education error:', e);
+        const section = container.closest('.education-section');
+        if (section) section.style.display = 'none';
+    }
+}
+
+// ============================================
+// INIT — runs all loaders on page load
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadAnnouncements();
+    loadSalesFlyer();
+    loadHighlights();
+    loadEducation();
+});
