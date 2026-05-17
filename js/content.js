@@ -2,43 +2,76 @@
  * KNFC Website - Dynamic Content
  * Kent Natural Foods Co-op
  *
- * Loads four content types from Google Sheets (published as CSV) or local CSV files:
+ * Loads four content types from various sources:
  *   - Announcements  → homepage bulletin board
  *   - Sales Flyer    → PDF embed on products page
  *   - Staff Picks    → department highlights on products page
  *   - Education      → learn & explore resources on products page
  *
- * SETUP — switching from local demo files to Google Sheets:
- * =========================================================
+ * SETUP OPTIONS:
+ * ==============
+ *
+ * OPTION 1: Google Drive Folder (RECOMMENDED - same folder as inventory)
+ * ----------------------------------------------------------------------
+ * Use the same Google Drive folder and Apps Script setup as inventory.js
+ * Simply drop these CSV files into your folder:
+ *   - announcements.csv
+ *   - sales.csv
+ *   - highlights.csv
+ *   - education.csv
+ *
+ * Steps:
+ * 1. Ensure you've completed the Google Apps Script setup (see google-apps-script/SETUP.md)
+ * 2. Upload the CSV files to your Google Drive folder
+ * 3. Set CONTENT_SOURCE = 'google-drive-folder'
+ * 4. Set GOOGLE_DRIVE_API_URL to your deployed script URL (same as in inventory.js)
+ *
+ * OPTION 2: Google Sheets (Alternative - separate sheet URLs)
+ * ------------------------------------------------------------
  * 1. Create one Google Spreadsheet with four tabs named:
  *    Announcements | Sales | Highlights | Education
  * 2. For each tab: File > Share > Publish to web > select that tab > CSV > Publish
  * 3. Copy each published URL and paste it into the GS_* constants below
- * 4. Change CONTENT_SOURCE from 'local' to 'google-sheets'
+ * 4. Set CONTENT_SOURCE = 'google-sheets'
  *
- * SALES FLYER — uploading a PDF:
- * ================================
+ * OPTION 3: Local Files (Development only)
+ * ----------------------------------------
+ * 1. Place CSV files in /data folder
+ * 2. Set CONTENT_SOURCE = 'local'
+ *
+ * SALES FLYER PDF:
+ * ================
  * 1. Upload your flyer PDF to Google Drive
  * 2. Right-click > Share > Anyone with the link can view
  * 3. Copy the share link (looks like: drive.google.com/file/d/FILEID/view)
- * 4. Paste that link into the PDF_URL column of the Sales tab
+ * 4. Paste that link into the PDF_URL column of the Sales CSV
  */
 
 // ============================================
 // CONFIGURATION — edit these values
 // ============================================
 
-// 'local' uses CSV files in /data folder (for demo / development)
-// 'google-sheets' uses the published Google Sheet URLs below
-const CONTENT_SOURCE = 'local';
+// Choose: 'google-drive-folder', 'google-sheets', or 'local'
+const CONTENT_SOURCE = 'google-drive-folder';
 
-// Local CSV paths (active when CONTENT_SOURCE = 'local')
+// Google Drive Folder API URL (if using 'google-drive-folder' mode)
+// This should be the SAME URL as GOOGLE_DRIVE_API_URL in inventory.js
+// Example: https://script.google.com/macros/s/AKfycby.../exec
+const GOOGLE_DRIVE_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+// Filenames in the Google Drive folder (if using 'google-drive-folder' mode)
+const FILENAME_ANNOUNCEMENTS = 'announcements.csv';
+const FILENAME_SALES         = 'sales.csv';
+const FILENAME_HIGHLIGHTS    = 'highlights.csv';
+const FILENAME_EDUCATION     = 'education.csv';
+
+// Local CSV paths (if using 'local' mode - for demo / development)
 const LOCAL_ANNOUNCEMENTS = 'data/announcements.csv';
 const LOCAL_SALES         = 'data/sales.csv';
 const LOCAL_HIGHLIGHTS    = 'data/highlights.csv';
 const LOCAL_EDUCATION     = 'data/education.csv';
 
-// Google Sheets published CSV URLs (active when CONTENT_SOURCE = 'google-sheets')
+// Google Sheets published CSV URLs (if using 'google-sheets' mode)
 const GS_ANNOUNCEMENTS = 'YOUR_ANNOUNCEMENTS_TAB_CSV_URL';
 const GS_SALES         = 'YOUR_SALES_TAB_CSV_URL';
 const GS_HIGHLIGHTS    = 'YOUR_HIGHLIGHTS_TAB_CSV_URL';
@@ -48,7 +81,14 @@ const GS_EDUCATION     = 'YOUR_EDUCATION_TAB_CSV_URL';
 // END CONFIGURATION
 // ============================================
 
-function contentUrl(local, gs) {
+/**
+ * Determine the URL/path to fetch content based on source type
+ * For google-drive-folder mode, we'll handle this differently in fetchCSV
+ */
+function contentUrl(local, gs, driveFilename) {
+    if (CONTENT_SOURCE === 'google-drive-folder') {
+        return driveFilename; // Return just the filename, fetchCSV will handle the rest
+    }
     return CONTENT_SOURCE === 'google-sheets' ? gs : local;
 }
 
@@ -56,8 +96,22 @@ function contentUrl(local, gs) {
 // CSV UTILITIES
 // ============================================
 
+/**
+ * Fetch CSV from the configured source
+ * If using google-drive-folder mode, path is the filename and we construct the API URL
+ */
 async function fetchCSV(path) {
-    const res = await fetch(path);
+    let url = path;
+
+    // If using Google Drive folder mode, construct the API URL
+    if (CONTENT_SOURCE === 'google-drive-folder') {
+        if (GOOGLE_DRIVE_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+            throw new Error('Google Drive API URL not configured. See google-apps-script/SETUP.md');
+        }
+        url = `${GOOGLE_DRIVE_API_URL}?file=${encodeURIComponent(path)}`;
+    }
+
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`Could not fetch ${path} (${res.status})`);
     return res.text();
 }
@@ -127,7 +181,7 @@ async function loadAnnouncements() {
     if (!container) return;
 
     try {
-        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_ANNOUNCEMENTS, GS_ANNOUNCEMENTS)))
+        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_ANNOUNCEMENTS, GS_ANNOUNCEMENTS, FILENAME_ANNOUNCEMENTS)))
             .filter(r => (r.Active || '').toLowerCase() === 'yes')
             .sort((a, b) => new Date(b.Date) - new Date(a.Date))
             .slice(0, 3);
@@ -169,7 +223,7 @@ async function loadSalesFlyer() {
     if (!container) return;
 
     try {
-        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_SALES, GS_SALES)))
+        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_SALES, GS_SALES, FILENAME_SALES)))
             .filter(r => (r.Active || '').toLowerCase() === 'yes');
 
         if (!rows.length) {
@@ -235,7 +289,7 @@ async function loadHighlights() {
     if (!container) return;
 
     try {
-        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_HIGHLIGHTS, GS_HIGHLIGHTS)))
+        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_HIGHLIGHTS, GS_HIGHLIGHTS, FILENAME_HIGHLIGHTS)))
             .filter(r => (r.Active || '').toLowerCase() === 'yes');
 
         if (!rows.length) {
@@ -274,7 +328,7 @@ async function loadEducation() {
     if (!container) return;
 
     try {
-        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_EDUCATION, GS_EDUCATION)))
+        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_EDUCATION, GS_EDUCATION, FILENAME_EDUCATION)))
             .filter(r => (r.Active || '').toLowerCase() === 'yes')
             .sort((a, b) => new Date(b.Date) - new Date(a.Date));
 

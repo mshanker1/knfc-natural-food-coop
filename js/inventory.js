@@ -3,27 +3,54 @@
  * Kent Natural Foods Co-op
  *
  * This script handles loading and displaying inventory data.
- * It supports two data sources:
- * 1. Google Sheets (published as CSV) - RECOMMENDED
- * 2. Local CSV file
+ * It supports multiple data sources:
+ * 1. Google Drive Folder (RECOMMENDED) - Single folder, drop files by name
+ * 2. Google Sheets (published as CSV) - Alternative option
+ * 3. Local CSV file - For development/testing
  *
  * SETUP INSTRUCTIONS:
  * ===================
  *
- * OPTION 1: Google Sheets (Recommended for easy updates)
- * -------------------------------------------------------
+ * OPTION 1: Google Drive Folder (RECOMMENDED - Simplest for buyers)
+ * ------------------------------------------------------------------
+ * This is the BEST method - create ONE folder and drop files in by name!
+ *
+ * BENEFITS:
+ * - Only configure once (one folder for all files)
+ * - Buyers just upload/replace files by name (inventory.csv, sales.csv, etc.)
+ * - No file IDs to track - just use consistent filenames
+ * - Can add more CSV files without reconfiguring website
+ *
+ * SETUP (see google-apps-script/SETUP.md for detailed instructions):
+ * 1. Create a Google Drive folder
+ * 2. Upload CSV files to the folder (inventory.csv, sales.csv, etc.)
+ * 3. Deploy the Google Apps Script proxy (see SETUP.md)
+ * 4. Copy the deployed web app URL
+ * 5. Set DATA_SOURCE = 'google-drive-folder'
+ * 6. Set GOOGLE_DRIVE_API_URL to your deployed script URL
+ *
+ * TO UPDATE INVENTORY (buyers):
+ * 1. Edit inventory in Excel/Sheets/etc
+ * 2. Save as CSV with same filename (inventory.csv)
+ * 3. Upload to Google Drive folder (replace existing file)
+ * 4. Done! Website updates automatically
+ *
+ * OPTION 2: Google Sheets (Alternative - requires publish step each time)
+ * -----------------------------------------------------------------------
  * 1. Create a Google Sheet with your inventory
- * 2. Format with columns: Product Name, Category, Brand, Price, Quantity, Last Updated
+ * 2. Format with columns: UPC, Item Name, Department, Remaining, Sales Price
  * 3. Go to File > Share > Publish to web
  * 4. Select "Comma-separated values (.csv)" format
  * 5. Copy the published URL
- * 6. Replace GOOGLE_SHEET_CSV_URL below with your URL
+ * 6. Set DATA_SOURCE = 'google-sheets'
+ * 7. Set GOOGLE_SHEET_CSV_URL to the published URL
  *
- * OPTION 2: Local CSV File
- * ------------------------
+ * OPTION 3: Local CSV File (Development/Testing only)
+ * ---------------------------------------------------
  * 1. Export inventory CSV from your POS system
  * 2. Save as "inventory.csv" in the /data folder
- * 3. Make sure DATA_SOURCE is set to 'local'
+ * 3. Set DATA_SOURCE = 'local'
+ * 4. Set LOCAL_CSV_PATH to your file path
  *
  * CSV FORMAT:
  * -----------
@@ -39,13 +66,23 @@
 // CONFIGURATION - Edit these values
 // ============================================
 
-// Choose data source: 'google-sheets' or 'local'
-const DATA_SOURCE = 'google-sheets';
+// Choose data source: 'google-drive-folder', 'google-sheets', or 'local'
+const DATA_SOURCE = 'google-drive-folder';
 
-// Google Sheets published CSV URL (if using Google Sheets)
+// Google Drive Folder API URL (if using 'google-drive-folder' mode)
+// This is the URL of your deployed Google Apps Script web app
+// Example: https://script.google.com/macros/s/AKfycby.../exec
+// See google-apps-script/SETUP.md for setup instructions
+const GOOGLE_DRIVE_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+// Filename for inventory in the Google Drive folder (if using 'google-drive-folder' mode)
+const INVENTORY_FILENAME = 'inventory.csv';
+
+// CSV URL from Google Sheets (if using 'google-sheets' mode)
+// Example: https://docs.google.com/spreadsheets/d/e/.../pub?output=csv
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRY8hzrs7gEjN6IO2_g6l5oRQYRkF4kwK6cqx5ciclY80v4JqNC5a9XQdAnkD9BeW-BTnKDQkTVWL6Z/pub?output=csv';
 
-// Local CSV file path (if using local file)
+// Local CSV file path (if using 'local' mode - for development/testing)
 const LOCAL_CSV_PATH = 'data/consolidated_inventory.csv';
 
 // Stock level thresholds
@@ -83,11 +120,17 @@ async function loadInventory() {
     try {
         let csvText;
 
-        if (DATA_SOURCE === 'google-sheets') {
+        if (DATA_SOURCE === 'google-drive-folder') {
+            // Check if API URL has been configured
+            if (GOOGLE_DRIVE_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+                showError('Google Drive folder not configured. Please see google-apps-script/SETUP.md');
+                return;
+            }
+            csvText = await fetchFromDriveFolder(INVENTORY_FILENAME);
+        } else if (DATA_SOURCE === 'google-sheets') {
             // Check if URL has been configured
             if (GOOGLE_SHEET_CSV_URL === 'YOUR_GOOGLE_SHEETS_PUBLISHED_CSV_URL_HERE') {
-                // Show demo data if not configured
-                showDemoData();
+                showError('Google Sheets URL not configured. Please update GOOGLE_SHEET_CSV_URL.');
                 return;
             }
             csvText = await fetchGoogleSheet();
@@ -105,6 +148,19 @@ async function loadInventory() {
         console.error('Error loading inventory:', error);
         showError('Unable to load inventory. Please try again later.');
     }
+}
+
+/**
+ * Fetch data from Google Drive folder via Apps Script proxy
+ */
+async function fetchFromDriveFolder(filename) {
+    const url = `${GOOGLE_DRIVE_API_URL}?file=${encodeURIComponent(filename)}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch from Google Drive: ${errorText}`);
+    }
+    return await response.text();
 }
 
 /**

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Requests | Kent Natural Foods Co-op</title>
+    <meta name="description" content="Request special products or place custom orders at Kent Natural Foods Co-op. We're here to help you find what you need.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">
+                    <span class="logo-text">KNFC</span>
+                    <span class="logo-tagline">Kent Natural Foods Co-op</span>
+                </a>
+                <nav class="main-nav">
+                    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <ul class="nav-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="membership.html">Membership</a></li>
+                        <li><a href="volunteer.html">Volunteer</a></li>
+                        <li><a href="special-requests.html" class="active">Special Requests</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Special Requests</h1>
+                <p>Can't find what you're looking for? Let us help!</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="contact-grid">
+                    <div class="contact-form">
+                        <h2>Request a Product</h2>
+                        <p class="mb-2">Looking for a specific product we don't currently carry? Need to place a bulk or special order? Fill out the form below and our team will do our best to accommodate your request.</p>
+
+                        <!--
+                            NOTE: This form needs a backend to process submissions.
+                            Options for static hosting:
+                            1. Use Formspree (formspree.io) - free tier available
+                            2. Use Netlify Forms (if hosting on Netlify)
+                            3. Use Google Forms embedded
+
+                            To use Formspree, replace the action URL:
+                            action="https://formspree.io/f/YOUR_FORM_ID"
+                        -->
+                        <form action="#" method="POST" id="special-request-form">
+                            <div class="form-group">
+                                <label for="name">Your Name *</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="request-type">Request Type *</label>
+                                <select id="request-type" name="request-type" required>
+                                    <option value="">Select request type...</option>
+                                    <option value="new-product">New Product Request</option>
+                                    <option value="bulk-order">Bulk Order</option>
+                                    <option value="special-order">Special Order (one-time)</option>
+                                    <option value="seasonal">Seasonal Item Request</option>
+                                    <option value="dietary">Dietary-Specific Product</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="product-name">Product Name/Description *</label>
+                                <input type="text" id="product-name" name="product-name" placeholder="e.g., Organic Quinoa Flour, Brand Name Kombucha" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="brand">Brand (if applicable)</label>
+                                <input type="text" id="brand" name="brand" placeholder="Optional">
+                            </div>
+                            <div class="form-group">
+                                <label for="quantity">Quantity Needed</label>
+                                <input type="text" id="quantity" name="quantity" placeholder="e.g., 5 units, 10 lbs, case of 12">
+                            </div>
+                            <div class="form-group">
+                                <label for="department">Department/Category</label>
+                                <select id="department" name="department">
+                                    <option value="">Select department...</option>
+                                    <option value="produce">Produce</option>
+                                    <option value="bulk">Bulk Foods</option>
+                                    <option value="dairy">Dairy & Refrigerated</option>
+                                    <option value="frozen">Frozen</option>
+                                    <option value="grocery">Grocery/Packaged Goods</option>
+                                    <option value="supplements">Vitamins & Supplements</option>
+                                    <option value="body-care">Body Care</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="details">Additional Details *</label>
+                                <textarea id="details" name="details" rows="5" placeholder="Please provide any additional information: Why are you requesting this product? Is this a one-time need or ongoing? Are there similar products you've seen elsewhere?" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="member" value="yes">
+                                    I am a KNFC member
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Request</button>
+                        </form>
+                    </div>
+
+                    <div class="contact-info-section">
+                        <div class="contact-info-card">
+                            <h3>How It Works</h3>
+                            <ol style="padding-left: 1.5rem; line-height: 1.8;">
+                                <li><strong>Submit Your Request</strong><br>Fill out the form with as much detail as possible.</li>
+                                <li><strong>We Review</strong><br>Our buyers will evaluate the request and check with our suppliers.</li>
+                                <li><strong>Get a Response</strong><br>We'll contact you within 3-5 business days with availability and pricing.</li>
+                                <li><strong>Order Fulfillment</strong><br>Once confirmed, we'll let you know when your product arrives!</li>
+                            </ol>
+                        </div>
+
+                        <div class="contact-info-card">
+                            <h3>Good to Know</h3>
+                            <ul style="padding-left: 1.5rem; line-height: 1.8;">
+                                <li>Not all requests can be fulfilled, but we'll do our best!</li>
+                                <li>Special orders may require advance payment or deposits.</li>
+                                <li>Member requests receive priority consideration.</li>
+                                <li>Bulk orders may qualify for volume discounts.</li>
+                                <li>Some items may have minimum order quantities.</li>
+                            </ul>
+                        </div>
+
+                        <div class="contact-info-card">
+                            <h3>Questions?</h3>
+                            <p>If you have questions about the special request process, feel free to call us or stop by the store.</p>
+                            <p>
+                                <strong>Phone:</strong><br>
+                                <a href="tel:[PHONE]">[Phone Number]</a>
+                            </p>
+                            <p>
+                                <strong>Email:</strong><br>
+                                <a href="mailto:[EMAIL]">[Email Address]</a>
+                            </p>
+                            <p>
+                                <strong>In-Store:</strong><br>
+                                Ask for a buyer or manager at the customer service desk.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section alt-bg">
+            <div class="container">
+                <h2 class="text-center">Popular Request Types</h2>
+                <div class="content-grid mt-2">
+                    <div class="content-card">
+                        <h3>Local Products</h3>
+                        <p>Looking for products from local farms or producers? We're always interested in expanding our local selection!</p>
+                    </div>
+                    <div class="content-card">
+                        <h3>Dietary Needs</h3>
+                        <p>Need gluten-free, vegan, keto, or allergen-friendly products? Let us know what would help you.</p>
+                    </div>
+                    <div class="content-card">
+                        <h3>Bulk Orders</h3>
+                        <p>Planning an event or stocking up? We can help with larger quantities at better prices.</p>
+                    </div>
+                    <div class="content-card">
+                        <h3>Hard-to-Find Items</h3>
+                        <p>Can't find that specialty ingredient or ethnic food product? We have access to many distributors.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Kent Natural Foods Co-op</h4>
+                    <p>A member-owned cooperative serving our community with natural, organic, and local foods.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="membership.html">Membership</a></li>
+                        <li><a href="volunteer.html">Volunteer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>
+                        [Street Address]<br>
+                        Kent, OH [ZIP]<br>
+                        <a href="tel:[PHONE]">[Phone Number]</a><br>
+                        <a href="mailto:[EMAIL]">[Email Address]</a>
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>Hours</h4>
+                    <p>
+                        Mon-Fri: [Hours]<br>
+                        Saturday: [Hours]<br>
+                        Sunday: [Hours]
+                    </p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> Kent Natural Foods Co-op. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
