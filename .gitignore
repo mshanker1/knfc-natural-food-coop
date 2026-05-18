@@ -43,3 +43,9 @@ tmp/
 # data/Packaged_HB.csv
 # data/Vitamins.csv
 # data/inventory.csv
+
+# R files
+.Rhistory
+
+# Claude Code configuration
+.claude/

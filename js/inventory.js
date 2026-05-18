@@ -73,7 +73,7 @@ const DATA_SOURCE = 'google-drive-folder';
 // This is the URL of your deployed Google Apps Script web app
 // Example: https://script.google.com/macros/s/AKfycby.../exec
 // See google-apps-script/SETUP.md for setup instructions
-const GOOGLE_DRIVE_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+const GOOGLE_DRIVE_API_URL = 'https://script.google.com/macros/s/AKfycbxlaUGtMKwCjZH51G9GqIm9lFlTcnINQONQIx2guAptAchKlc17EZLvuLsj5KfspCaj/exec';
 
 // Filename for inventory in the Google Drive folder (if using 'google-drive-folder' mode)
 const INVENTORY_FILENAME = 'inventory.csv';

@@ -32,9 +32,10 @@
 // ============================================
 
 // Your Google Drive folder ID (get this from the folder URL)
+// https://drive.google.com/drive/folders/1yAm0CvUl30xiE12MWRMqMEKIFzCCzFW6
 // Example: If folder URL is https://drive.google.com/drive/folders/1AbC2dEf3GhI4jKl5MnO
 // Then FOLDER_ID is: 1AbC2dEf3GhI4jKl5MnO
-const FOLDER_ID = 'YOUR_FOLDER_ID_HERE';
+const FOLDER_ID = '1yAm0CvUl30xiE12MWRMqMEKIFzCCzFW6';
 
 // ============================================
 // END CONFIGURATION
