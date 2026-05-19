@@ -219,15 +219,11 @@ async function fetchLocalCSV() {
 /**
  * Parse CSV text into array of objects
  * Expected columns: UPC, Item Name, Department, Remaining, Sales Price
+ * VERSION: 2.0 - Fixed property mapping
  */
 function parseCSV(csvText) {
-    console.error('!!! parseCSV CALLED !!!');
-    console.error('CSV text length:', csvText.length);
-
+    console.log('parseCSV v2.0 executing');
     const lines = csvText.trim().split('\n');
-    console.error('Number of lines:', lines.length);
-    console.error('First line (header):', lines[0]);
-
     const products = [];
 
     // Skip header line, start from line 1
@@ -235,16 +231,13 @@ function parseCSV(csvText) {
         const line = lines[i].trim();
         if (!line) continue;
 
-        // Simple split by comma (handles the test CSV which has no quotes)
+        // Simple split by comma (our test CSV has no quoted values)
         const parts = line.split(',');
 
-        if (i === 1) {
-            console.error('First data line:', line);
-            console.error('Split parts:', parts);
-            console.error('Parts length:', parts.length);
-        }
-
         if (parts.length >= 5) {
+            // Map CSV columns to object properties
+            // CSV: UPC, Item Name, Department, Remaining, Sales Price
+            // Object: upc, name, department, quantity, price
             const product = {
                 upc: parts[0].trim(),
                 name: parts[1].trim(),
@@ -253,18 +246,12 @@ function parseCSV(csvText) {
                 price: parsePrice(parts[4].trim())
             };
 
-            if (i === 1) {
-                console.error('First product created:', product);
-            }
-
             if (product.name) {
                 products.push(product);
             }
         }
     }
 
-    console.error('Total products parsed:', products.length);
-    console.error('First 2 products:', products.slice(0, 2));
     return products;
 }
 
