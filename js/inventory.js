@@ -152,6 +152,17 @@ async function loadInventory() {
         inventoryData = parseCSV(csvText);
         console.log('Parsed inventory data:', inventoryData.length, 'products');
 
+        // Debug: Log first 3 products to see what we got
+        console.log('=== FIRST 3 PARSED PRODUCTS ===');
+        inventoryData.slice(0, 3).forEach((prod, idx) => {
+            console.log(`Product ${idx}:`, prod);
+            console.log(`  - upc: "${prod.upc}" (${typeof prod.upc})`);
+            console.log(`  - name: "${prod.name}" (${typeof prod.name})`);
+            console.log(`  - department: "${prod.department}" (${typeof prod.department})`);
+            console.log(`  - quantity: ${prod.quantity} (${typeof prod.quantity})`);
+            console.log(`  - price: ${prod.price} (${typeof prod.price})`);
+        });
+
         populateCategories();
         renderInventory(inventoryData);
         setupFilters();
