@@ -57,7 +57,7 @@ const CONTENT_SOURCE = 'google-drive-folder';
 // Google Drive Folder API URL (if using 'google-drive-folder' mode)
 // This should be the SAME URL as GOOGLE_DRIVE_API_URL in inventory.js
 // Example: https://script.google.com/macros/s/AKfycby.../exec
-const GOOGLE_DRIVE_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+const GOOGLE_DRIVE_API_URL = 'https://script.google.com/macros/s/AKfycbxlaUGtMKwCjZH51G9GqIm9lFlTcnINQONQIx2guAptAchKlc17EZLvuLsj5KfspCaj/exec';
 
 // Filenames in the Google Drive folder (if using 'google-drive-folder' mode)
 const FILENAME_ANNOUNCEMENTS = 'announcements.csv';
