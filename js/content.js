@@ -24,7 +24,7 @@
  * 1. Ensure you've completed the Google Apps Script setup (see google-apps-script/SETUP.md)
  * 2. Upload the CSV files to your Google Drive folder
  * 3. Set CONTENT_SOURCE = 'google-drive-folder'
- * 4. Set GOOGLE_DRIVE_API_URL to your deployed script URL (same as in inventory.js)
+ * 4. Set CONTENT_GOOGLE_DRIVE_API_URL to your deployed script URL (same as in inventory.js)
  *
  * OPTION 2: Google Sheets (Alternative - separate sheet URLs)
  * ------------------------------------------------------------
@@ -57,7 +57,7 @@ const CONTENT_SOURCE = 'google-drive-folder';
 // Google Drive Folder API URL (if using 'google-drive-folder' mode)
 // This should be the SAME URL as GOOGLE_DRIVE_API_URL in inventory.js
 // Example: https://script.google.com/macros/s/AKfycby.../exec
-const GOOGLE_DRIVE_API_URL = 'https://script.google.com/macros/s/AKfycbxlaUGtMKwCjZH51G9GqIm9lFlTcnINQONQIx2guAptAchKlc17EZLvuLsj5KfspCaj/exec';
+const CONTENT_GOOGLE_DRIVE_API_URL = 'https://script.google.com/macros/s/AKfycbxlaUGtMKwCjZH51G9GqIm9lFlTcnINQONQIx2guAptAchKlc17EZLvuLsj5KfspCaj/exec';
 
 // Filenames in the Google Drive folder (if using 'google-drive-folder' mode)
 const FILENAME_ANNOUNCEMENTS = 'announcements.csv';
@@ -105,10 +105,10 @@ async function fetchCSV(path) {
 
     // If using Google Drive folder mode, construct the API URL
     if (CONTENT_SOURCE === 'google-drive-folder') {
-        if (GOOGLE_DRIVE_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+        if (CONTENT_GOOGLE_DRIVE_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
             throw new Error('Google Drive API URL not configured. See google-apps-script/SETUP.md');
         }
-        url = `${GOOGLE_DRIVE_API_URL}?file=${encodeURIComponent(path)}`;
+        url = `${CONTENT_GOOGLE_DRIVE_API_URL}?file=${encodeURIComponent(path)}`;
     }
 
     const res = await fetch(url);
