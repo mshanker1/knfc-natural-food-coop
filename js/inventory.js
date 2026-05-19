@@ -198,13 +198,20 @@ function parseCSV(csvText) {
     for (let i = 1; i < lines.length; i++) {
         const values = parseCSVLine(lines[i]);
         if (values.length >= 5) {
+            const priceValue = parsePrice(values[4]);
             const product = {
                 upc: values[0] || '',
                 name: values[1] || '',
                 department: values[2] || 'Uncategorized',
                 quantity: parseInt(values[3]) || 0,
-                price: parsePrice(values[4])
+                price: priceValue
             };
+
+            // Debug: Log first product to verify parsing
+            if (i === 1) {
+                console.log('First product parsed:', product);
+                console.log('Raw values:', values);
+            }
 
             // Only add products with a name
             if (product.name) {
@@ -255,7 +262,12 @@ function parsePrice(priceStr) {
  * Format price for display
  */
 function formatPrice(price) {
-    return '$' + price.toFixed(2);
+    // Handle undefined, null, or non-numeric values
+    if (price === undefined || price === null || isNaN(price)) {
+        console.warn('Invalid price value:', price);
+        return '$0.00';
+    }
+    return '$' + Number(price).toFixed(2);
 }
 
 /**
