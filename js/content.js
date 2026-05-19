@@ -223,8 +223,12 @@ async function loadSalesFlyer() {
     if (!container) return;
 
     try {
-        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_SALES, GS_SALES, FILENAME_SALES)))
+        console.log('Loading sales flyer...');
+        const csvText = await fetchCSV(contentUrl(LOCAL_SALES, GS_SALES, FILENAME_SALES));
+        console.log('Sales CSV fetched:', csvText.substring(0, 100));
+        const rows = parseCSV(csvText)
             .filter(r => (r.Active || '').toLowerCase() === 'yes');
+        console.log('Sales rows:', rows);
 
         if (!rows.length) {
             container.innerHTML = '<p class="no-content">No active sales flyer right now. Check back soon!</p>';
@@ -289,8 +293,12 @@ async function loadHighlights() {
     if (!container) return;
 
     try {
-        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_HIGHLIGHTS, GS_HIGHLIGHTS, FILENAME_HIGHLIGHTS)))
+        console.log('Loading highlights...');
+        const csvText = await fetchCSV(contentUrl(LOCAL_HIGHLIGHTS, GS_HIGHLIGHTS, FILENAME_HIGHLIGHTS));
+        console.log('Highlights CSV fetched:', csvText.substring(0, 100));
+        const rows = parseCSV(csvText)
             .filter(r => (r.Active || '').toLowerCase() === 'yes');
+        console.log('Highlights rows:', rows);
 
         if (!rows.length) {
             const section = container.closest('.staff-picks-section');
@@ -328,9 +336,13 @@ async function loadEducation() {
     if (!container) return;
 
     try {
-        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_EDUCATION, GS_EDUCATION, FILENAME_EDUCATION)))
+        console.log('Loading education...');
+        const csvText = await fetchCSV(contentUrl(LOCAL_EDUCATION, GS_EDUCATION, FILENAME_EDUCATION));
+        console.log('Education CSV fetched:', csvText.substring(0, 100));
+        const rows = parseCSV(csvText)
             .filter(r => (r.Active || '').toLowerCase() === 'yes')
             .sort((a, b) => new Date(b.Date) - new Date(a.Date));
+        console.log('Education rows:', rows);
 
         if (!rows.length) {
             const section = container.closest('.education-section');
