@@ -35,7 +35,7 @@
 // https://drive.google.com/drive/folders/1yAm0CvUl30xiE12MWRMqMEKIFzCCzFW6
 // Example: If folder URL is https://drive.google.com/drive/folders/1AbC2dEf3GhI4jKl5MnO
 // Then FOLDER_ID is: 1AbC2dEf3GhI4jKl5MnO
-const FOLDER_ID = '1yAm0CvUl30xiE12MWRMqMEKIFzCCzFW6';
+const FOLDER_ID = '186FBV_BDcq3iSI_PVyrmWuLSGMTlzI8X';
 
 // ============================================
 // END CONFIGURATION

@@ -24,12 +24,13 @@ Instead of configuring individual file URLs, you'll:
 
 The URL looks like:
 ```
-https://drive.google.com/drive/folders/1AbC2dEf3GhI4jKl5MnO6pQr7StU8vWx9YzA
+// https://drive.google.com/drive/folders/1AbC2dEf3GhI4jKl5MnO6pQr7StU8vWx9YzA
+// https://drive.google.com/drive/folders/186FBV_BDcq3iSI_PVyrmWuLSGMTlzI8X
 ```
 
 The **Folder ID** is the part after `/folders/`:
 ```
-1AbC2dEf3GhI4jKl5MnO6pQr7StU8vWx9YzA
+186FBV_BDcq3iSI_PVyrmWuLSGMTlzI8X
 ```
 
 **Save this Folder ID** - you'll need it in Step 3.
