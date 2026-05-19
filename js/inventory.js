@@ -117,50 +117,26 @@ document.addEventListener('DOMContentLoaded', function() {
  * Load inventory data from configured source
  */
 async function loadInventory() {
-    console.log('=== LOADING INVENTORY ===');
-    console.log('DATA_SOURCE:', DATA_SOURCE);
-    console.log('INVENTORY_FILENAME:', INVENTORY_FILENAME);
-    console.log('GOOGLE_DRIVE_API_URL:', GOOGLE_DRIVE_API_URL);
-
     try {
         let csvText;
 
         if (DATA_SOURCE === 'google-drive-folder') {
-            // Check if API URL has been configured
             if (GOOGLE_DRIVE_API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
                 showError('Google Drive folder not configured. Please see google-apps-script/SETUP.md');
                 return;
             }
-            console.log('Fetching from Google Drive folder...');
             csvText = await fetchFromDriveFolder(INVENTORY_FILENAME);
-            console.log('CSV fetched, length:', csvText?.length);
-            console.log('First 200 chars:', csvText?.substring(0, 200));
         } else if (DATA_SOURCE === 'google-sheets') {
-            // Check if URL has been configured
             if (GOOGLE_SHEET_CSV_URL === 'YOUR_GOOGLE_SHEETS_PUBLISHED_CSV_URL_HERE') {
                 showError('Google Sheets URL not configured. Please update GOOGLE_SHEET_CSV_URL.');
                 return;
             }
-            console.log('Fetching from Google Sheets...');
             csvText = await fetchGoogleSheet();
         } else {
-            console.log('Fetching from local CSV...');
             csvText = await fetchLocalCSV();
         }
 
-        console.log('Parsing CSV...');
         inventoryData = parseCSV(csvText);
-        console.log('Parsed inventory data:', inventoryData.length, 'products');
-
-        // Debug: Log first 3 products to see what we got
-        console.log('=== FIRST 3 PARSED PRODUCTS ===');
-        inventoryData.slice(0, 3).forEach((prod, idx) => {
-            console.log(`Product ${idx}:`, prod);
-            console.log(`  Object.keys:`, Object.keys(prod));
-            console.log(`  Object.values:`, Object.values(prod));
-            console.log(`  Stringified:`, JSON.stringify(prod));
-        });
-
         populateCategories();
         renderInventory(inventoryData);
         setupFilters();
@@ -168,7 +144,6 @@ async function loadInventory() {
 
     } catch (error) {
         console.error('Error loading inventory:', error);
-        console.error('Error stack:', error.stack);
         showError('Unable to load inventory. Please try again later.');
     }
 }
@@ -178,20 +153,14 @@ async function loadInventory() {
  */
 async function fetchFromDriveFolder(filename) {
     const url = `${GOOGLE_DRIVE_API_URL}?file=${encodeURIComponent(filename)}`;
-    console.log('Fetching URL:', url);
-
     const response = await fetch(url);
-    console.log('Response status:', response.status, response.statusText);
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error response:', errorText);
         throw new Error(`Failed to fetch from Google Drive: ${errorText}`);
     }
 
-    const text = await response.text();
-    console.log('Received text length:', text.length);
-    return text;
+    return await response.text();
 }
 
 /**
@@ -219,10 +188,8 @@ async function fetchLocalCSV() {
 /**
  * Parse CSV text into array of objects
  * Expected columns: UPC, Item Name, Department, Remaining, Sales Price
- * VERSION: 2.0 - Fixed property mapping
  */
 function parseCSV(csvText) {
-    console.log('parseCSV v2.0 executing');
     const lines = csvText.trim().split('\n');
     const products = [];
 
@@ -296,7 +263,6 @@ function parsePrice(priceStr) {
 function formatPrice(price) {
     // Handle undefined, null, or non-numeric values
     if (price === undefined || price === null || isNaN(price)) {
-        console.warn('Invalid price value:', price);
         return '$0.00';
     }
     return '$' + Number(price).toFixed(2);
