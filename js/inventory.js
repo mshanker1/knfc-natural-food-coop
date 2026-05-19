@@ -226,10 +226,17 @@ function parseCSV(csvText) {
 
         const values = parseCSVLine(line);
 
-        // Debug: Log first few products
-        if (i <= 3) {
-            console.log(`Line ${i} raw:`, line);
-            console.log(`Line ${i} values (${values.length}):`, values);
+        // Debug: Log ALL products to see what's happening
+        if (i <= 2) {
+            console.log(`\n=== Product ${i} ===`);
+            console.log('Raw line:', line);
+            console.log('Parsed values:', values);
+            console.log('Values length:', values.length);
+            console.log('values[0] (UPC):', values[0]);
+            console.log('values[1] (Name):', values[1]);
+            console.log('values[2] (Dept):', values[2]);
+            console.log('values[3] (Qty):', values[3]);
+            console.log('values[4] (Price):', values[4]);
         }
 
         if (values.length >= 5) {
@@ -244,7 +251,10 @@ function parseCSV(csvText) {
 
             // Debug: Log first product to verify parsing
             if (i === 1) {
-                console.log('First product parsed:', product);
+                console.log('=== First product object ===');
+                console.log(product);
+                console.log('priceValue:', priceValue);
+                console.log('parsePrice result for "' + values[4] + '":', parsePrice(values[4]));
             }
 
             // Only add products with a name
