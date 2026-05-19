@@ -49,3 +49,6 @@ tmp/
 
 # Claude Code configuration
 .claude/
+
+# Archive folder (old/unnecessary files)
+archive/
