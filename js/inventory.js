@@ -319,7 +319,10 @@ function getStockStatus(quantity) {
  * Populate department filter dropdown
  */
 function populateCategories() {
-    const departments = [...new Set(inventoryData.map(p => p.department))].sort();
+    // Handle both property name formats
+    const departments = [...new Set(inventoryData.map(p =>
+        p.department || p.Department || p['Department'] || 'Uncategorized'
+    ))].sort();
 
     categoryFilter.innerHTML = '<option value="">All Departments</option>';
     departments.forEach(dept => {
@@ -345,14 +348,22 @@ function renderInventory(products) {
 
     products.forEach(product => {
         const row = document.createElement('tr');
-        const status = getStockStatus(product.quantity);
+
+        // Handle both old property names (upc, name) and CSV column names (UPC, Item Name)
+        const upc = product.upc || product.UPC || product['UPC'] || '';
+        const name = product.name || product['Item Name'] || '';
+        const department = product.department || product.Department || product['Department'] || '';
+        const quantity = product.quantity || parseInt(product.Remaining || product['Remaining'] || 0);
+        const price = product.price || parsePrice(product['Sales Price'] || product['Sales Price'] || '0');
+
+        const status = getStockStatus(quantity);
 
         row.innerHTML = `
-            <td>${escapeHtml(product.upc)}</td>
-            <td><strong>${escapeHtml(product.name)}</strong></td>
-            <td>${escapeHtml(product.department)}</td>
-            <td>${product.quantity}</td>
-            <td>${formatPrice(product.price)}</td>
+            <td>${escapeHtml(upc)}</td>
+            <td><strong>${escapeHtml(name)}</strong></td>
+            <td>${escapeHtml(department)}</td>
+            <td>${quantity}</td>
+            <td>${formatPrice(price)}</td>
         `;
 
         tableBodyEl.appendChild(row);
@@ -392,22 +403,27 @@ function filterProducts() {
 
     // Filter by search term
     if (searchTerm) {
-        filtered = filtered.filter(product =>
-            product.name.toLowerCase().includes(searchTerm) ||
-            product.upc.toLowerCase().includes(searchTerm) ||
-            product.department.toLowerCase().includes(searchTerm)
-        );
+        filtered = filtered.filter(product => {
+            const name = (product.name || product['Item Name'] || '').toLowerCase();
+            const upc = (product.upc || product.UPC || product['UPC'] || '').toLowerCase();
+            const dept = (product.department || product.Department || product['Department'] || '').toLowerCase();
+            return name.includes(searchTerm) || upc.includes(searchTerm) || dept.includes(searchTerm);
+        });
     }
 
     // Filter by department
     if (selectedCategory) {
-        filtered = filtered.filter(product => product.department === selectedCategory);
+        filtered = filtered.filter(product => {
+            const dept = product.department || product.Department || product['Department'];
+            return dept === selectedCategory;
+        });
     }
 
     // Filter by stock status
     if (selectedStock) {
         filtered = filtered.filter(product => {
-            const status = getStockStatus(product.quantity);
+            const qty = product.quantity || parseInt(product.Remaining || product['Remaining'] || 0);
+            const status = getStockStatus(qty);
             return status.class === selectedStock;
         });
     }
