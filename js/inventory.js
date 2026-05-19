@@ -156,11 +156,9 @@ async function loadInventory() {
         console.log('=== FIRST 3 PARSED PRODUCTS ===');
         inventoryData.slice(0, 3).forEach((prod, idx) => {
             console.log(`Product ${idx}:`, prod);
-            console.log(`  - upc: "${prod.upc}" (${typeof prod.upc})`);
-            console.log(`  - name: "${prod.name}" (${typeof prod.name})`);
-            console.log(`  - department: "${prod.department}" (${typeof prod.department})`);
-            console.log(`  - quantity: ${prod.quantity} (${typeof prod.quantity})`);
-            console.log(`  - price: ${prod.price} (${typeof prod.price})`);
+            console.log(`  Object.keys:`, Object.keys(prod));
+            console.log(`  Object.values:`, Object.values(prod));
+            console.log(`  Stringified:`, JSON.stringify(prod));
         });
 
         populateCategories();
@@ -223,61 +221,50 @@ async function fetchLocalCSV() {
  * Expected columns: UPC, Item Name, Department, Remaining, Sales Price
  */
 function parseCSV(csvText) {
-    const lines = csvText.trim().split('\n');
-    const headers = parseCSVLine(lines[0]).map(h => h.trim().replace(/^"|"$/g, ''));
+    console.error('!!! parseCSV CALLED !!!');
+    console.error('CSV text length:', csvText.length);
 
-    console.log('CSV Headers:', headers);
-    console.log('Total lines:', lines.length);
+    const lines = csvText.trim().split('\n');
+    console.error('Number of lines:', lines.length);
+    console.error('First line (header):', lines[0]);
 
     const products = [];
 
+    // Skip header line, start from line 1
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
-        if (!line) continue; // Skip empty lines
+        if (!line) continue;
 
-        const values = parseCSVLine(line);
+        // Simple split by comma (handles the test CSV which has no quotes)
+        const parts = line.split(',');
 
-        // Debug: Log ALL products to see what's happening
-        if (i <= 2) {
-            console.log(`\n=== Product ${i} ===`);
-            console.log('Raw line:', line);
-            console.log('Parsed values:', values);
-            console.log('Values length:', values.length);
-            console.log('values[0] (UPC):', values[0]);
-            console.log('values[1] (Name):', values[1]);
-            console.log('values[2] (Dept):', values[2]);
-            console.log('values[3] (Qty):', values[3]);
-            console.log('values[4] (Price):', values[4]);
+        if (i === 1) {
+            console.error('First data line:', line);
+            console.error('Split parts:', parts);
+            console.error('Parts length:', parts.length);
         }
 
-        if (values.length >= 5) {
-            const priceValue = parsePrice(values[4]);
+        if (parts.length >= 5) {
             const product = {
-                upc: (values[0] || '').trim(),
-                name: (values[1] || '').trim(),
-                department: (values[2] || 'Uncategorized').trim(),
-                quantity: parseInt(values[3]) || 0,
-                price: priceValue
+                upc: parts[0].trim(),
+                name: parts[1].trim(),
+                department: parts[2].trim(),
+                quantity: parseInt(parts[3].trim()) || 0,
+                price: parsePrice(parts[4].trim())
             };
 
-            // Debug: Log first product to verify parsing
             if (i === 1) {
-                console.log('=== First product object ===');
-                console.log(product);
-                console.log('priceValue:', priceValue);
-                console.log('parsePrice result for "' + values[4] + '":', parsePrice(values[4]));
+                console.error('First product created:', product);
             }
 
-            // Only add products with a name
             if (product.name) {
                 products.push(product);
             }
-        } else {
-            console.warn(`Line ${i} has only ${values.length} values, expected 5+`);
         }
     }
 
-    console.log(`Total products parsed: ${products.length}`);
+    console.error('Total products parsed:', products.length);
+    console.error('First 2 products:', products.slice(0, 2));
     return products;
 }
 
