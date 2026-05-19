@@ -191,18 +191,31 @@ async function fetchLocalCSV() {
  */
 function parseCSV(csvText) {
     const lines = csvText.trim().split('\n');
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const headers = parseCSVLine(lines[0]).map(h => h.trim().replace(/^"|"$/g, ''));
+
+    console.log('CSV Headers:', headers);
+    console.log('Total lines:', lines.length);
 
     const products = [];
 
     for (let i = 1; i < lines.length; i++) {
-        const values = parseCSVLine(lines[i]);
+        const line = lines[i].trim();
+        if (!line) continue; // Skip empty lines
+
+        const values = parseCSVLine(line);
+
+        // Debug: Log first few products
+        if (i <= 3) {
+            console.log(`Line ${i} raw:`, line);
+            console.log(`Line ${i} values (${values.length}):`, values);
+        }
+
         if (values.length >= 5) {
             const priceValue = parsePrice(values[4]);
             const product = {
-                upc: values[0] || '',
-                name: values[1] || '',
-                department: values[2] || 'Uncategorized',
+                upc: (values[0] || '').trim(),
+                name: (values[1] || '').trim(),
+                department: (values[2] || 'Uncategorized').trim(),
                 quantity: parseInt(values[3]) || 0,
                 price: priceValue
             };
@@ -210,16 +223,18 @@ function parseCSV(csvText) {
             // Debug: Log first product to verify parsing
             if (i === 1) {
                 console.log('First product parsed:', product);
-                console.log('Raw values:', values);
             }
 
             // Only add products with a name
             if (product.name) {
                 products.push(product);
             }
+        } else {
+            console.warn(`Line ${i} has only ${values.length} values, expected 5+`);
         }
     }
 
+    console.log(`Total products parsed: ${products.length}`);
     return products;
 }
 
