@@ -52,7 +52,8 @@
 // ============================================
 
 // Choose: 'google-drive-folder', 'google-sheets', or 'local'
-const CONTENT_SOURCE = 'google-drive-folder';
+// For local development, set to 'local' so files under /data are used.
+const CONTENT_SOURCE = 'local';
 
 // Google Drive Folder API URL (if using 'google-drive-folder' mode)
 // This should be the SAME URL as GOOGLE_DRIVE_API_URL in inventory.js
