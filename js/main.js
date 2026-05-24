@@ -373,6 +373,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Lazy-load Google Maps iframe when map placeholder scrolls into view
+    function initLazyMaps() {
+        const lazyEls = document.querySelectorAll('.map-lazy');
+        if (!lazyEls || lazyEls.length === 0) return;
+        const createIframe = (el) => {
+            const src = el.dataset.src;
+            if (!src) return;
+            const iframe = document.createElement('iframe');
+            iframe.src = src;
+            iframe.width = '600';
+            iframe.height = '450';
+            iframe.style.border = '0';
+            iframe.style.width = '100%';
+            iframe.style.height = '360px';
+            iframe.setAttribute('loading', 'lazy');
+            iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+            iframe.setAttribute('aria-hidden', 'false');
+            iframe.setAttribute('title', 'Map to Kent Natural Foods');
+            el.innerHTML = '';
+            el.appendChild(iframe);
+        };
+
+        if ('IntersectionObserver' in window) {
+            const io = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        createIframe(entry.target);
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { rootMargin: '200px' });
+            lazyEls.forEach(el => io.observe(el));
+        } else {
+            // Fallback: load immediately
+            lazyEls.forEach(el => createIframe(el));
+        }
+    }
+    initLazyMaps();
+
     // Update hero "Open today" badge based on STORE_INFO.hours and timezone
     (function updateHeroOpenBadge() {
         try {
