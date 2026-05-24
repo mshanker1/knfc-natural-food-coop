@@ -108,6 +108,36 @@ function _hoursRangeIncludesNow(hoursRangeStr, timeZone = 'America/New_York') {
     return nowMinutes >= start || nowMinutes <= end;
 }
 
+function _getHoursForDayIndex(idx) {
+    if (idx === 0) return STORE_INFO.hours.sunday;
+    if (idx === 6) return STORE_INFO.hours.saturday || STORE_INFO.hours.weekday;
+    return STORE_INFO.hours.weekday;
+}
+
+function _getNextOpenStart(timeZone = 'America/New_York') {
+    const now = _nowInTimeZone(timeZone);
+    const today = now.getDay();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    for (let offset = 0; offset < 7; offset++) {
+        const day = (today + offset) % 7;
+        const hoursStr = _getHoursForDayIndex(day);
+        if (!hoursStr) continue;
+        const parts = hoursStr.split(/[–-]/).map(s => s.trim());
+        if (parts.length < 2) continue;
+        const start = _parseTimeToMinutes(parts[0]);
+        const end = _parseTimeToMinutes(parts[1]);
+        if (start == null) continue;
+        if (offset === 0) {
+            // same day: if opening time still in future, return it
+            if (start > nowMinutes) return parts[0];
+            // otherwise, continue searching future days
+        } else {
+            return parts[0];
+        }
+    }
+    return '';
+}
+
 
 // ============================================================================
 // HEADER
@@ -126,7 +156,7 @@ function getHeaderHTML() {
         _hoursForToday = STORE_INFO.hours.weekday;
     }
     const _isOpenNow = _hoursRangeIncludesNow(_hoursForToday, 'America/New_York');
-    const _startPart = (_hoursForToday || '').split(/[–-]/)[0] || '';
+    const _startPart = _isOpenNow ? (_hoursForToday || '').split(/[–-]/)[0] || '' : _getNextOpenStart('America/New_York') || ((_hoursForToday || '').split(/[–-]/)[0] || '');
     const openRibbonText = _isOpenNow ? `Open today · ${_hoursForToday}` : `Closed now · Opens ${_startPart.trim()}`;
     return `
     <!-- Utility ribbon -->
@@ -347,7 +377,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 hoursText = STORE_INFO.hours.weekday;
             }
             const isOpen = _hoursRangeIncludesNow(hoursText, 'America/New_York');
-            const startPart = (hoursText || '').split(/[–-]/)[0] || '';
+            let startPart = '';
+            if (isOpen) {
+                startPart = (hoursText || '').split(/[–-]/)[0] || '';
+            } else {
+                startPart = _getNextOpenStart('America/New_York') || ((hoursText || '').split(/[–-]/)[0] || '');
+            }
             badge.textContent = isOpen ? `Open today, ${hoursText}` : `Closed now · Opens ${startPart.trim()}`;
         } catch (err) {
             // Fail silently — badge is non-critical
