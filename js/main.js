@@ -129,13 +129,24 @@ function _getNextOpenStart(timeZone = 'America/New_York') {
         if (start == null) continue;
         if (offset === 0) {
             // same day: if opening time still in future, return it
-            if (start > nowMinutes) return parts[0];
+            if (start > nowMinutes) return { day: day, time: parts[0] };
             // otherwise, continue searching future days
         } else {
-            return parts[0];
+            return { day: day, time: parts[0] };
         }
     }
-    return '';
+    return null;
+}
+
+function _formatNextOpenLabel(timeZone = 'America/New_York') {
+    const next = _getNextOpenStart(timeZone);
+    if (!next) return '';
+    const now = _nowInTimeZone(timeZone);
+    const today = now.getDay();
+    const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    if (next.day === today) return `${next.time}`;
+    if ((next.day + 7 - today) % 7 === 1) return `Tomorrow ${next.time}`;
+    return `${weekdayNames[next.day]} ${next.time}`;
 }
 
 
@@ -156,8 +167,8 @@ function getHeaderHTML() {
         _hoursForToday = STORE_INFO.hours.weekday;
     }
     const _isOpenNow = _hoursRangeIncludesNow(_hoursForToday, 'America/New_York');
-    const _startPart = _isOpenNow ? (_hoursForToday || '').split(/[–-]/)[0] || '' : _getNextOpenStart('America/New_York') || ((_hoursForToday || '').split(/[–-]/)[0] || '');
-    const openRibbonText = _isOpenNow ? `Open today · ${_hoursForToday}` : `Closed now · Opens ${_startPart.trim()}`;
+    const _nextOpenLabel = _isOpenNow ? (_hoursForToday || '') : _formatNextOpenLabel('America/New_York') || ((_hoursForToday || '').split(/[–-]/)[0] || '');
+    const openRibbonText = _isOpenNow ? `Open today · ${_hoursForToday}` : `Closed now · Opens ${_nextOpenLabel.trim()}`;
     return `
     <!-- Utility ribbon -->
     <div class="utility-ribbon">
@@ -377,13 +388,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 hoursText = STORE_INFO.hours.weekday;
             }
             const isOpen = _hoursRangeIncludesNow(hoursText, 'America/New_York');
-            let startPart = '';
+            let nextLabel = '';
             if (isOpen) {
-                startPart = (hoursText || '').split(/[–-]/)[0] || '';
+                nextLabel = (hoursText || '');
+                badge.textContent = `Open today, ${hoursText}`;
             } else {
-                startPart = _getNextOpenStart('America/New_York') || ((hoursText || '').split(/[–-]/)[0] || '');
+                nextLabel = _formatNextOpenLabel('America/New_York') || ((hoursText || '').split(/[–-]/)[0] || '');
+                badge.textContent = `Closed now · Opens ${nextLabel.trim()}`;
             }
-            badge.textContent = isOpen ? `Open today, ${hoursText}` : `Closed now · Opens ${startPart.trim()}`;
         } catch (err) {
             // Fail silently — badge is non-critical
             console.error('Failed to update hero open badge', err);
