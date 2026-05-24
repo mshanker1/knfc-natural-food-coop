@@ -1,16 +1,19 @@
 /**
- * KNFC Website - Main JavaScript
- * Kent Natural Foods Co-op
+ * KNFC Website — Main JavaScript (v2, May 2026)
+ * Kent Natural Foods Co-op · Member-Owned Since 1971
+ *
+ * Provides shared header + footer markup with the new
+ * awning-and-marigold visual identity. Edit STORE_INFO
+ * and the sun-mark SVG below; everything else is layout.
  */
 
 // ============================================================================
-// SHARED HEADER AND FOOTER COMPONENTS
+// STORE INFO — single source of truth
 // ============================================================================
-// Update these once and they'll propagate to all pages automatically!
 
 const STORE_INFO = {
     phone: '(330) 673-2878',
-    email: '[Email Address]', // Update this with actual email
+    email: 'hello@kentnaturalfoods.coop', // TODO: update with real address
     address: {
         street: '151 East Main St.',
         city: 'Kent',
@@ -18,35 +21,95 @@ const STORE_INFO = {
         zip: '44240'
     },
     hours: {
-        weekday: '9:00 AM - 8:00 PM',
-        saturday: '9:00 AM - 8:00 PM',
-        sunday: 'Noon - 6:00 PM'
+        weekday: '9:00 AM – 8:00 PM',
+        saturday: '9:00 AM – 8:00 PM',
+        sunday: 'Noon – 6:00 PM'
+    },
+    foundedYear: 1971,
+    social: {
+        facebook: 'https://www.facebook.com/kentcoop/',
+        instagram: '#'
     }
 };
 
+// ============================================================================
+// SUN MARK — the inline SVG used in header, footer, and as a brand anchor
+// ============================================================================
+
+const SUN_MARK_SVG = `
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="14" fill="currentColor" />
+        <g fill="currentColor">
+            <rect x="48" y="6"  width="4" height="14" />
+            <rect x="48" y="80" width="4" height="14" />
+            <rect x="6"  y="48" width="14" height="4" />
+            <rect x="80" y="48" width="14" height="4" />
+            <rect x="48" y="6"  width="4" height="14" transform="rotate(45 50 50)" />
+            <rect x="48" y="80" width="4" height="14" transform="rotate(45 50 50)" />
+            <rect x="48" y="6"  width="4" height="14" transform="rotate(-45 50 50)" />
+            <rect x="48" y="80" width="4" height="14" transform="rotate(-45 50 50)" />
+            <rect x="48" y="6"  width="4" height="10" transform="rotate(22.5 50 50)" />
+            <rect x="48" y="84" width="4" height="10" transform="rotate(22.5 50 50)" />
+            <rect x="48" y="6"  width="4" height="10" transform="rotate(-22.5 50 50)" />
+            <rect x="48" y="84" width="4" height="10" transform="rotate(-22.5 50 50)" />
+            <rect x="48" y="6"  width="4" height="10" transform="rotate(67.5 50 50)" />
+            <rect x="48" y="84" width="4" height="10" transform="rotate(67.5 50 50)" />
+            <rect x="48" y="6"  width="4" height="10" transform="rotate(-67.5 50 50)" />
+            <rect x="48" y="84" width="4" height="10" transform="rotate(-67.5 50 50)" />
+        </g>
+    </svg>
+`;
+
+// Helper — exposed so any page can drop a sun mark inline
+window.SUN_MARK_SVG = SUN_MARK_SVG;
+
+// ============================================================================
+// HEADER
+// ============================================================================
+
 function getHeaderHTML() {
+    const tel = STORE_INFO.phone.replace(/[^0-9]/g, '');
     return `
+    <!-- Utility ribbon -->
+    <div class="utility-ribbon">
+        <div class="container">
+            <div>
+                Open today · ${STORE_INFO.hours.weekday}
+                <span class="dot">●</span>
+                ${STORE_INFO.address.street}, ${STORE_INFO.address.city} ${STORE_INFO.address.state}
+                <span class="dot">●</span>
+                <a href="tel:${tel}">${STORE_INFO.phone}</a>
+            </div>
+            <div>Members save every day &rarr;</div>
+        </div>
+    </div>
+
+    <!-- The awning -->
     <header class="site-header">
         <div class="container">
             <div class="header-content">
-                <a href="index.html" class="logo">
-                    <span class="logo-text">KNFC</span>
-                    <span class="logo-tagline">Kent Natural Foods Co-op</span>
+                <a href="index.html" class="logo" aria-label="Kent Natural Foods Co-op — home">
+                    <span class="logo-sun" aria-hidden="true">${SUN_MARK_SVG}</span>
+                    <span class="logo-text-wrap">
+                        <span class="logo-text">Kent Natural Foods</span>
+                        <span class="logo-tagline">Member-Owned Co-op · Since ${STORE_INFO.foundedYear}</span>
+                    </span>
                 </a>
-                <nav class="main-nav">
-                    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                <nav class="main-nav" aria-label="Main navigation">
+                    <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
                         <span></span>
                         <span></span>
                         <span></span>
                     </button>
                     <ul class="nav-links">
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="about.html">About</a></li>
+                        <li><a href="index.html">Shop</a></li>
                         <li><a href="products.html">Products</a></li>
+                        <li><a href="about.html">Our Story</a></li>
                         <li><a href="membership.html">Membership</a></li>
                         <li><a href="volunteer.html">Volunteer</a></li>
                         <li><a href="special-requests.html">Special Requests</a></li>
-                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="contact.html">Visit</a></li>
+                        <li><a href="membership.html" class="nav-cta">Become a Member</a></li>
                     </ul>
                 </nav>
             </div>
@@ -55,62 +118,84 @@ function getHeaderHTML() {
     `;
 }
 
+// ============================================================================
+// FOOTER
+// ============================================================================
+
 function getFooterHTML() {
+    const tel = STORE_INFO.phone.replace(/[^0-9]/g, '');
     return `
     <footer class="site-footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Kent Natural Foods Co-op</h4>
-                    <p>A member-owned cooperative serving our community with natural, organic, and local foods.</p>
+                <div class="footer-section footer-signature">
+                    <span class="footer-sun sun-mark" aria-hidden="true">${SUN_MARK_SVG}</span>
+                    <p class="footer-sig">"Local. Before <em>local</em> was cool."</p>
                 </div>
                 <div class="footer-section">
-                    <h4>Quick Links</h4>
+                    <h4>Shop</h4>
                     <ul>
-                        <li><a href="about.html">About Us</a></li>
                         <li><a href="products.html">Products</a></li>
-                        <li><a href="membership.html">Membership</a></li>
-                        <li><a href="volunteer.html">Volunteer</a></li>
+                        <li><a href="products.html#sales">This Week's Sales</a></li>
+                        <li><a href="products.html#staff-picks">Staff Picks</a></li>
+                        <li><a href="special-requests.html">Special Requests</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4>Contact</h4>
+                    <h4>The Co-op</h4>
+                    <ul>
+                        <li><a href="about.html">Our Story</a></li>
+                        <li><a href="membership.html">Membership</a></li>
+                        <li><a href="volunteer.html">Volunteer</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Visit</h4>
                     <p>
                         ${STORE_INFO.address.street}<br>
                         ${STORE_INFO.address.city}, ${STORE_INFO.address.state} ${STORE_INFO.address.zip}<br>
-                        <a href="tel:${STORE_INFO.phone.replace(/[^0-9]/g, '')}">${STORE_INFO.phone}</a><br>
+                        <a href="tel:${tel}">${STORE_INFO.phone}</a><br>
                         <a href="mailto:${STORE_INFO.email}">${STORE_INFO.email}</a>
-                    </p>
-                </div>
-                <div class="footer-section">
-                    <h4>Hours</h4>
-                    <p>
-                        Mon-Fri: ${STORE_INFO.hours.weekday}<br>
-                        Saturday: ${STORE_INFO.hours.saturday}<br>
-                        Sunday: ${STORE_INFO.hours.sunday}
                     </p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; <span id="currentYear"></span> Kent Natural Foods Co-op. All rights reserved.</p>
+                <div>&copy; <span id="currentYear"></span> Kent Natural Foods Co-operative · Member-Owned Since ${STORE_INFO.foundedYear}</div>
+                <div>
+                    <a href="${STORE_INFO.social.facebook}" target="_blank" rel="noopener">Facebook</a>
+                    &nbsp;·&nbsp;
+                    <a href="${STORE_INFO.social.instagram}" target="_blank" rel="noopener">Instagram</a>
+                </div>
             </div>
         </div>
     </footer>
     `;
 }
 
-function setActiveNavLink() {
-    // Determine current page from URL
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+// ============================================================================
+// NAV ACTIVE STATE
+// ============================================================================
 
-    // Find and set active link
+function setActiveNavLink() {
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const navLinks = document.querySelectorAll('.nav-links a');
     navLinks.forEach(link => {
+        if (link.classList.contains('nav-cta')) return; // skip the CTA button
         const linkPage = link.getAttribute('href');
-        if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+        // Map related pages to a shared nav root
+        const groups = {
+            'index.html': ['index.html', ''],
+            'products.html': ['products.html'],
+            'about.html': ['about.html'],
+            'membership.html': ['membership.html'],
+            'volunteer.html': ['volunteer.html'],
+            'special-requests.html': ['special-requests.html'],
+            'contact.html': ['contact.html']
+        };
+        const group = groups[linkPage] || [linkPage];
+        if (group.includes(currentPage)) {
             link.classList.add('active');
-        } else {
-            link.classList.remove('active');
         }
     });
 }
@@ -120,77 +205,69 @@ function setActiveNavLink() {
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Inject shared header and footer
+    // Inject header
     const headerPlaceholder = document.getElementById('header-placeholder');
-    const footerPlaceholder = document.getElementById('footer-placeholder');
-
     if (headerPlaceholder) {
         headerPlaceholder.outerHTML = getHeaderHTML();
         setActiveNavLink();
     }
 
+    // Inject footer
+    const footerPlaceholder = document.getElementById('footer-placeholder');
     if (footerPlaceholder) {
         footerPlaceholder.outerHTML = getFooterHTML();
     }
 
-    // Update copyright year
+    // Copyright year
     const yearSpan = document.getElementById('currentYear');
-    if (yearSpan) {
-        yearSpan.textContent = new Date().getFullYear();
-    }
+    if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-    // Mobile menu toggle
+    // Mobile menu
     const menuToggle = document.querySelector('.mobile-menu-toggle');
     const navLinks = document.querySelector('.nav-links');
-
     if (menuToggle && navLinks) {
         menuToggle.addEventListener('click', function() {
-            navLinks.classList.toggle('active');
-            menuToggle.classList.toggle('active');
+            const open = navLinks.classList.toggle('active');
+            menuToggle.classList.toggle('active', open);
+            menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
-
-        // Close menu when clicking a link
         navLinks.querySelectorAll('a').forEach(function(link) {
             link.addEventListener('click', function() {
                 navLinks.classList.remove('active');
                 menuToggle.classList.remove('active');
+                menuToggle.setAttribute('aria-expanded', 'false');
             });
         });
-
-        // Close menu when clicking outside
         document.addEventListener('click', function(e) {
             if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
                 navLinks.classList.remove('active');
                 menuToggle.classList.remove('active');
+                menuToggle.setAttribute('aria-expanded', 'false');
             }
         });
     }
 
-    // Contact form handling (basic - needs backend integration)
-    const contactForm = document.getElementById('contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
-            // If no action URL is set or it's just "#", prevent default
-            const action = contactForm.getAttribute('action');
+    // Contact form — preserve original behavior
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const action = form.getAttribute('action');
             if (!action || action === '#') {
                 e.preventDefault();
-                alert('Contact form submission is not yet configured. Please email us directly or call the store.');
+                alert('This form is not yet wired up. Please email us at ' + STORE_INFO.email + ' or call ' + STORE_INFO.phone + '.');
             }
         });
-    }
+    });
 
-    // Smooth scroll for anchor links
+    // Smooth scroll for in-page anchors
     document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
         anchor.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
-            if (href !== '#') {
-                e.preventDefault();
+            if (href !== '#' && href.length > 1) {
                 const target = document.querySelector(href);
                 if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                    e.preventDefault();
+                    const top = target.getBoundingClientRect().top + window.pageYOffset - 80;
+                    window.scrollTo({ top: top, behavior: 'smooth' });
                 }
             }
         });

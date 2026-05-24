@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products | Kent Natural Foods Co-op</title>
-    <meta name="description" content="Browse the current inventory at Kent Natural Foods Co-op. Search for natural, organic, and local products.">
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Products · Kent Natural Foods Co-op</title>
+    <meta name="description" content="Browse current inventory at Kent Natural Foods Co-op. Search organic, local, and natural products by department and stock status.">
+    <link rel="stylesheet" href="css/styles.css?v=2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -16,15 +16,16 @@
     <main>
         <section class="page-header">
             <div class="container">
-                <h1>Our Products</h1>
-                <p>Browse our current inventory of natural and organic products</p>
+                <div class="pre">— Eight aisles, thousands of choices —</div>
+                <h1>Our <em>products</em>.</h1>
+                <p>Sales, staff picks, current stock, and the everyday goods we carry — refreshed weekly by our buyers.</p>
             </div>
         </section>
 
-        <!-- Sales Flyer Section — managed via sales.csv or Google Sheets Sales tab -->
+        <!-- Sales Flyer Section — managed via sales.csv -->
         <section class="sales-section" id="sales">
             <div class="container">
-                <h2>This Week's Sales</h2>
+                <h2>This week's <em>sales</em>.</h2>
                 <p class="section-intro">Member specials and co-op deals, updated regularly. <a href="membership.html">Not a member yet?</a> Join to unlock everyday discounts.</p>
                 <div id="sales-flyer-container" class="sales-flyer-container">
                     <p class="no-content">Loading sales flyer...</p>
@@ -32,11 +33,11 @@
             </div>
         </section>
 
-        <!-- Staff Picks Section — managed via highlights.csv or Google Sheets Highlights tab -->
+        <!-- Staff Picks Section -->
         <section class="staff-picks-section" id="staff-picks">
             <div class="container">
-                <h2>Staff Picks</h2>
-                <p class="section-intro">What we're loving this season — one recommendation from each department.</p>
+                <h2>Staff <em>picks</em>.</h2>
+                <p class="section-intro">What we're loving this season — one recommendation from each department, written by the person who shelved it.</p>
                 <div id="staff-picks-container" class="staff-picks-grid">
                     <p class="no-content">Loading staff picks...</p>
                 </div>
@@ -47,41 +48,34 @@
             <div class="container">
                 <div class="content-grid mb-2">
                     <div>
-                        <h2>What We Carry</h2>
-                        <p>KNFC offers a wide variety of natural, organic, and locally-sourced products including:</p>
+                        <h2>What we <em>carry</em>.</h2>
+                        <p>KNFC offers natural, organic, and locally-sourced products across the store:</p>
                         <ul>
-                            <li><strong>Fresh Produce:</strong> Local and organic fruits and vegetables</li>
-                            <li><strong>Bulk Foods:</strong> Grains, nuts, seeds, spices, and more</li>
-                            <li><strong>Dairy & Alternatives:</strong> Milk, cheese, yogurt, and plant-based options</li>
+                            <li><strong>Fresh produce:</strong> Local and organic fruits and vegetables</li>
+                            <li><strong>Bulk foods:</strong> Grains, nuts, seeds, spices, and more — by the scoop</li>
+                            <li><strong>Dairy &amp; alternatives:</strong> Milk, cheese, yogurt, and plant-based options</li>
                             <li><strong>Groceries:</strong> Pantry staples, snacks, and specialty items</li>
-                            <li><strong>Frozen Foods:</strong> Healthy frozen meals and ingredients</li>
+                            <li><strong>Frozen foods:</strong> Healthy frozen meals and ingredients</li>
                             <li><strong>Supplements:</strong> Vitamins, minerals, and herbal products</li>
-                            <li><strong>Body Care:</strong> Natural soaps, lotions, and personal care items</li>
+                            <li><strong>Body care:</strong> Natural soaps, lotions, and personal-care items</li>
                             <li><strong>Household:</strong> Eco-friendly cleaning products</li>
                         </ul>
                     </div>
                     <div>
-                        <h2>Special Requests</h2>
+                        <h2>Special <em>requests</em>.</h2>
                         <div class="content-card">
-                            <p>Can't find what you're looking for? We're happy to try to order it for you!</p>
-                            <p>Simply ask a staff member or <a href="contact.html">contact us</a> with your request. If it's available through our distributors and meets our product standards, we'll do our best to bring it in.</p>
+                            <p>Can't find what you're looking for? We're happy to try to order it for you.</p>
+                            <p>Ask a staff member at the counter, or <a href="special-requests.html">fill out a request form</a>. If it's available through our distributors and meets our product standards, we'll do our best to bring it in.</p>
                         </div>
 
-                        <h3 class="mt-2">Local Producers</h3>
-                        <p>We're proud to support local farmers and producers. Look for our "Local" tags in store to find products from:</p>
-                        <ul>
-                            <!-- UPDATE with actual local producer names -->
-                            <li>[Local Farm Name 1]</li>
-                            <li>[Local Farm Name 2]</li>
-                            <li>[Local Producer Name]</li>
-                            <li>And more!</li>
-                        </ul>
+                        <h3 class="mt-2">Local producers</h3>
+                        <p>We're proud to support local farmers and producers. Look for our "Local" tags in store to find products from neighbors and small Ohio farms.</p>
                     </div>
                 </div>
 
-                <hr style="border: none; border-top: 1px solid #e8e4dc; margin: 2rem 0;">
+                <hr style="border: none; border-top: 1px solid var(--color-rule); margin: 3rem 0;">
 
-                <h2>Current Inventory</h2>
+                <h2>Current <em>inventory</em>.</h2>
                 <p class="mb-2">Search our current stock below. This list is updated weekly from our point-of-sale system.</p>
 
                 <!-- Search and Filter Controls -->
@@ -94,7 +88,6 @@
 
                     <select id="category-filter" class="filter-select" aria-label="Filter by department">
                         <option value="">All Departments</option>
-                        <!-- Departments will be populated by JavaScript -->
                     </select>
 
                     <select id="stock-filter" class="filter-select" aria-label="Filter by stock status">
@@ -121,7 +114,6 @@
                             </tr>
                         </thead>
                         <tbody id="inventory-body">
-                            <!-- Inventory rows will be populated by JavaScript -->
                         </tbody>
                     </table>
                 </div>
@@ -129,16 +121,16 @@
                 <p class="last-updated" id="last-updated"></p>
 
                 <div class="content-card mt-2">
-                    <h3>Note About Inventory</h3>
-                    <p>Our online inventory is updated weekly and may not reflect real-time stock levels. For the most accurate availability, please call the store or visit us in person. Some items may be sold out between updates.</p>
+                    <h3>A note about inventory</h3>
+                    <p>Our online inventory is updated weekly and may not reflect real-time stock levels. For the most accurate availability, please call the store or visit us in person. Some items may sell out between updates.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Education Section — managed via education.csv or Google Sheets Education tab -->
+        <!-- Education Section -->
         <section class="education-section" id="learn">
             <div class="container">
-                <h2>Learn &amp; Explore</h2>
+                <h2>Learn &amp; <em>explore</em>.</h2>
                 <p class="section-intro">Resources to help you shop smarter, eat better, and support our community.</p>
                 <div id="education-container" class="education-grid">
                     <p class="no-content">Loading resources...</p>
@@ -149,10 +141,11 @@
         <section class="cta-section">
             <div class="container">
                 <div class="cta-content">
-                    <h2>Looking for Something Specific?</h2>
+                    <h2>Looking for <em>something specific</em>?</h2>
                     <p>Can't find what you need? Contact us and we'll help you find it or order it for you.</p>
                     <div class="cta-buttons">
-                        <a href="contact.html" class="btn btn-primary">Contact Us</a>
+                        <a href="special-requests.html" class="btn btn-primary">Make a Special Request</a>
+                        <a href="contact.html" class="btn btn-secondary">Contact the Store</a>
                     </div>
                 </div>
             </div>
@@ -163,6 +156,6 @@
 
     <script src="js/main.js"></script>
     <script src="js/inventory.js?v=4"></script>
-    <script src="js/content.js?v=3"></script>
+    <script src="js/content.js?v=4"></script>
 </body>
 </html>

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us | Kent Natural Foods Co-op</title>
-    <meta name="description" content="Get in touch with Kent Natural Foods Co-op. Find our location, hours, and ways to reach us.">
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Visit · Kent Natural Foods Co-op</title>
+    <meta name="description" content="Visit Kent Natural Foods Co-op at 151 East Main St., Kent, Ohio. Hours, location, contact form, and ways to get in touch.">
+    <link rel="stylesheet" href="css/styles.css?v=2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -16,8 +16,9 @@
     <main>
         <section class="page-header">
             <div class="container">
-                <h1>Contact Us</h1>
-                <p>We'd love to hear from you</p>
+                <div class="pre">— 151 East Main St., Kent, Ohio —</div>
+                <h1>Come <em>say hi</em>.</h1>
+                <p>Open every day. The door is the maroon one with the sun in the window.</p>
             </div>
         </section>
 
@@ -25,46 +26,40 @@
             <div class="container">
                 <div class="contact-grid">
                     <div class="contact-form">
-                        <h2>Send Us a Message</h2>
-                        <p class="mb-2">Have a question, suggestion, or feedback? Fill out the form below and we'll get back to you.</p>
+                        <h2>Send us a <em>message</em>.</h2>
+                        <p class="mb-2">Question, suggestion, or feedback? Fill out the form below and we'll get back to you.</p>
 
                         <!--
                             NOTE: This form needs a backend to process submissions.
-                            Options for static hosting:
-                            1. Use Formspree (formspree.io) - free tier available
-                            2. Use Netlify Forms (if hosting on Netlify)
-                            3. Use Google Forms embedded
-
-                            To use Formspree, replace the action URL:
-                            action="https://formspree.io/f/YOUR_FORM_ID"
+                            See README for Formspree / Netlify Forms setup.
                         -->
                         <form action="#" method="POST" id="contact-form">
                             <div class="form-group">
-                                <label for="name">Your Name *</label>
+                                <label for="name">Your name *</label>
                                 <input type="text" id="name" name="name" required>
                             </div>
                             <div class="form-group">
-                                <label for="email">Email Address *</label>
+                                <label for="email">Email address *</label>
                                 <input type="email" id="email" name="email" required>
                             </div>
                             <div class="form-group">
-                                <label for="phone">Phone Number</label>
+                                <label for="phone">Phone number</label>
                                 <input type="tel" id="phone" name="phone">
                             </div>
                             <div class="form-group">
                                 <label for="subject">Subject *</label>
                                 <select id="subject" name="subject" required>
-                                    <option value="">Select a topic...</option>
-                                    <option value="general">General Inquiry</option>
-                                    <option value="membership">Membership Questions</option>
+                                    <option value="">Select a topic…</option>
+                                    <option value="general">General inquiry</option>
+                                    <option value="membership">Membership questions</option>
                                     <option value="volunteer">Volunteering</option>
-                                    <option value="products">Product Request/Question</option>
-                                    <option value="feedback">Feedback or Suggestion</option>
+                                    <option value="products">Product request / question</option>
+                                    <option value="feedback">Feedback or suggestion</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="message">Your Message *</label>
+                                <label for="message">Your message *</label>
                                 <textarea id="message" name="message" required></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary">Send Message</button>
@@ -73,81 +68,50 @@
 
                     <div class="contact-info-section">
                         <div class="contact-info-card">
-                            <h3>Visit Us</h3>
+                            <h3>Visit us</h3>
                             <p>
-                                <!-- UPDATE with actual address -->
                                 <strong>Kent Natural Foods Co-op</strong><br>
-                                [Street Address]<br>
-                                Kent, OH [ZIP]
+                                151 East Main St.<br>
+                                Kent, OH 44240
                             </p>
                             <div class="map-container">
                                 <!--
-                                    To add a Google Map:
-                                    1. Go to Google Maps and find your location
+                                    To embed a Google Map:
+                                    1. Go to Google Maps and find the store
                                     2. Click "Share" then "Embed a map"
-                                    3. Copy the iframe code and paste it here
-
-                                    Example:
-                                    <iframe src="https://www.google.com/maps/embed?..."
-                                            width="100%" height="200" style="border:0;"
-                                            allowfullscreen="" loading="lazy">
-                                    </iframe>
+                                    3. Paste the iframe code here
                                 -->
-                                [Google Map embed goes here]
+                                Google Map embed goes here
                             </div>
                         </div>
 
                         <div class="contact-info-card">
-                            <h3>Store Hours</h3>
-                            <!-- UPDATE with actual hours -->
-                            <table style="width: 100%;">
-                                <tr>
-                                    <td>Monday</td>
-                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
-                                </tr>
-                                <tr>
-                                    <td>Tuesday</td>
-                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
-                                </tr>
-                                <tr>
-                                    <td>Wednesday</td>
-                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
-                                </tr>
-                                <tr>
-                                    <td>Thursday</td>
-                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
-                                </tr>
-                                <tr>
-                                    <td>Friday</td>
-                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
-                                </tr>
-                                <tr>
-                                    <td>Saturday</td>
-                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
-                                </tr>
-                                <tr>
-                                    <td>Sunday</td>
-                                    <td style="text-align: right;">[X:XX AM - X:XX PM]</td>
-                                </tr>
+                            <h3>Store hours</h3>
+                            <table style="width: 100%; font-family: var(--font-editorial); font-size: 15px;">
+                                <tr><td>Monday</td><td style="text-align: right;">9:00 AM – 8:00 PM</td></tr>
+                                <tr><td>Tuesday</td><td style="text-align: right;">9:00 AM – 8:00 PM</td></tr>
+                                <tr><td>Wednesday</td><td style="text-align: right;">9:00 AM – 8:00 PM</td></tr>
+                                <tr><td>Thursday</td><td style="text-align: right;">9:00 AM – 8:00 PM</td></tr>
+                                <tr><td>Friday</td><td style="text-align: right;">9:00 AM – 8:00 PM</td></tr>
+                                <tr><td>Saturday</td><td style="text-align: right;">9:00 AM – 8:00 PM</td></tr>
+                                <tr><td>Sunday</td><td style="text-align: right;">Noon – 6:00 PM</td></tr>
                             </table>
                         </div>
 
                         <div class="contact-info-card">
-                            <h3>Get in Touch</h3>
+                            <h3>Get in touch</h3>
                             <p>
-                                <!-- UPDATE with actual contact info -->
                                 <strong>Phone:</strong><br>
-                                <a href="tel:[PHONE]">[Phone Number]</a>
+                                <a href="tel:3306732878">(330) 673-2878</a>
                             </p>
                             <p>
                                 <strong>Email:</strong><br>
-                                <a href="mailto:[EMAIL]">[Email Address]</a>
+                                <a href="mailto:hello@kentnaturalfoods.coop">hello@kentnaturalfoods.coop</a>
                             </p>
                             <p>
-                                <strong>Social Media:</strong><br>
-                                <!-- UPDATE with actual social links -->
-                                <a href="[FACEBOOK_URL]" target="_blank">Facebook</a><br>
-                                <a href="[INSTAGRAM_URL]" target="_blank">Instagram</a>
+                                <strong>Social:</strong><br>
+                                <a href="https://www.facebook.com/kentcoop/" target="_blank" rel="noopener">Facebook</a><br>
+                                <a href="#" target="_blank" rel="noopener">Instagram</a>
                             </p>
                         </div>
                     </div>
@@ -157,7 +121,7 @@
 
         <section class="content-section alt-bg">
             <div class="container">
-                <h2 class="text-center">Quick Answers</h2>
+                <h2 class="text-center">Quick <em>answers</em>.</h2>
                 <div class="content-grid mt-2">
                     <div class="content-card">
                         <h3>Looking to become a member?</h3>
@@ -169,11 +133,11 @@
                     </div>
                     <div class="content-card">
                         <h3>Looking for a specific product?</h3>
-                        <p>Browse our <a href="products.html">Products page</a> to see what's currently available.</p>
+                        <p>Browse our <a href="products.html">Products page</a> or submit a <a href="special-requests.html">special request</a>.</p>
                     </div>
                     <div class="content-card">
                         <h3>Want to learn more about us?</h3>
-                        <p>Visit our <a href="about.html">About page</a> to learn about our history and mission.</p>
+                        <p>Visit our <a href="about.html">Our Story page</a> to learn about our history and mission.</p>
                     </div>
                 </div>
             </div>

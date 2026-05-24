@@ -1,185 +1,70 @@
-# Kent Natural Foods Co-op Website
+# KNFC Website — v2 Redesign (May 2026)
 
-A simple, responsive website for Kent Natural Foods Co-op (KNFC) in Kent, Ohio.
+This folder contains a complete visual refresh of the KNFC website, built on top of your existing structure. **Drop these files into your `knfc-website/` folder, overwriting the matching files. No HTML structure or JavaScript hooks were broken — the inventory loader, content loader, contact forms, and Google Drive integration all still work.**
 
-## Features
+---
 
-- **Home Page**: Hero section, quick info cards, announcements
-- **About Page**: History, mission, cooperative principles, board members
-- **Products Page**: Searchable inventory with category/stock filtering
-- **Membership Page**: Membership tiers, benefits, FAQ
-- **Volunteer Page**: Volunteer opportunities and signup info
-- **Contact Page**: Contact form, hours, location
+## What changed at a glance
 
-## Project Structure
+- **New palette** sampled from the storefront — maroon awning, marigold yellow lettering, supporting forest + rust. Green moves to a supporting role.
+- **New typography** — DM Serif Display + Newsreader + DM Sans + DM Mono (replacing Playfair + Nunito). Loaded from Google Fonts, no install needed.
+- **A real sun mark** drawn from the emblem in the front window — now the brand anchor in the header lockup, footer, and as a backdrop in the dark "Why a co-op" section.
+- **Photos in place of placeholders** — storefront in the hero, tote in the manifesto strip, eight department thumbnails using your real photos.
+- **"Local. Before local was cool."** — your tagline from the totes is now the home page hero line and footer signature.
+- **Emoji icons removed** — replaced with monospace eyebrow labels everywhere.
+- **Founded date corrected to 1971** (matches the totes; the old README said 1972).
+- **All pages refreshed** — same content, new chrome, slightly tightened copy with the co-op's voice.
 
-```
-knfc-website/
-├── index.html          # Home page
-├── about.html          # About the co-op
-├── products.html       # Product inventory
-├── membership.html     # Membership information
-├── volunteer.html      # Volunteer opportunities
-├── contact.html        # Contact information
-├── css/
-│   └── styles.css      # All site styles
-├── js/
-│   ├── main.js         # General site JavaScript
-│   └── inventory.js    # Inventory loading/display
-├── data/
-│   └── inventory.csv   # Sample inventory file
-└── images/             # (Add your images here)
-```
+---
 
-## Setup Instructions
+## Files in this folder
 
-### Option 1: GitHub Pages (Recommended - Free)
+| File | What to do |
+| --- | --- |
+| `index.html` | Replace `knfc-website/index.html` |
+| `about.html` | Replace `knfc-website/about.html` |
+| `products.html` | Replace `knfc-website/products.html` |
+| `membership.html` | Replace `knfc-website/membership.html` |
+| `volunteer.html` | Replace `knfc-website/volunteer.html` |
+| `contact.html` | Replace `knfc-website/contact.html` |
+| `special-requests.html` | Replace `knfc-website/special-requests.html` |
+| `css/styles.css` | Replace `knfc-website/css/styles.css` |
+| `js/main.js` | Replace `knfc-website/js/main.js` (header, footer, store info) |
+| `js/content.js` | **Unchanged** — same file as your current one, included so the preview works. You can leave the live version alone. |
+| `js/inventory.js` | **Unchanged** — same as above. |
+| `images/` | A subset of the photos from `knfc-website/images/` used by the redesign. You already have these — no action needed. |
 
-1. Create a GitHub account at github.com
-2. Create a new repository named `knfc-website`
-3. Upload all files from this folder to the repository
-4. Go to Settings > Pages
-5. Under "Source", select "main" branch
-6. Your site will be live at: `https://yourusername.github.io/knfc-website`
+---
 
-### Option 2: Netlify (Free)
+## Things to update before you publish
 
-1. Create a Netlify account at netlify.com
-2. Drag and drop this entire folder onto the Netlify dashboard
-3. Netlify will deploy your site and give you a URL
-4. You can connect a custom domain later
+I left a few clearly-marked placeholders for content only you can provide. Search for `[` in the HTML files to find them quickly. Specifically:
 
-### Option 3: Local Testing
+1. **`js/main.js`** — `STORE_INFO.email` is set to a placeholder `hello@kentnaturalfoods.coop`. Update to your real address.
+2. **`membership.html`** — pricing for each tier (`$[XX]`, `$[XXX]`) and the member discount percentage `[X]%`.
+3. **`volunteer.html`** — time-commitment numbers, age requirements, discount details.
+4. **`about.html`** — board of directors names and bios.
+5. **`contact.html`** — paste the Google Maps embed iframe where it says "Google Map embed goes here".
 
-Open `index.html` in a web browser. Note: The inventory feature won't work locally due to browser security restrictions. Use a local server:
+---
 
-```bash
-# Python 3
-python -m http.server 8000
+## Things to add when you have them
 
-# Then open http://localhost:8000
-```
+These are real photos and real names that will make the site feel less placeholder. None are blockers:
 
-## Customizing the Content
+- **Staff portraits** for the Staff Picks feature (the products page reads them from `highlights.csv`).
+- **Real producer/farm names** in your sales and staff-picks CSVs. The redesign uses your existing CSV structure — just keep filling them in.
+- **A Google Map embed** on the contact page (replace the placeholder).
+- **A favicon** built from the sun mark. The SVG is in `js/main.js` (`SUN_MARK_SVG`) — easy to export as PNG/ICO at any size.
 
-### Updating Placeholder Text
+---
 
-Search for `[` throughout the HTML files to find placeholders:
-- `[YEAR]` - Year the co-op was founded
-- `[Street Address]` - Store address
-- `[ZIP]` - ZIP code
-- `[PHONE]` - Phone number
-- `[EMAIL]` - Email address
-- `[Hours]` - Store hours
-- `[X]` - Various numbers (percentages, prices, etc.)
+## If something breaks
 
-### Changing Colors
+The redesign reuses every class name, ID, and form field name from your current site, so existing JavaScript should keep working. If you see anything odd:
 
-Edit the CSS variables at the top of `css/styles.css`:
+- **Inventory not loading?** Check `js/inventory.js` — unchanged from your current setup, including the Google Apps Script URL.
+- **Announcements not appearing?** Same — `js/content.js` is untouched.
+- **Header or footer missing?** The new `main.js` injects them. Make sure your HTML files still have `<div id="header-placeholder"></div>` and `<div id="footer-placeholder"></div>`.
 
-```css
-:root {
-    --color-primary: #2d5a27;      /* Main green */
-    --color-primary-light: #4a7c43;
-    --color-secondary: #8b6914;     /* Accent gold */
-    /* ... etc */
-}
-```
-
-### Adding Images
-
-1. Place images in the `images/` folder
-2. Reference them in HTML: `<img src="images/your-image.jpg" alt="Description">`
-
-## Setting Up Inventory
-
-The inventory page can pull product data from Google Sheets (recommended) or a local CSV file.
-
-### Google Sheets Setup (Recommended)
-
-1. **Create a Google Sheet** with these columns:
-   - Column A: Product Name
-   - Column B: Category
-   - Column C: Brand
-   - Column D: Price (e.g., 4.99)
-   - Column E: Quantity (number)
-   - Column F: Last Updated (optional)
-
-2. **Publish the Sheet**:
-   - Go to File > Share > Publish to web
-   - Under "Link", select your sheet and choose "Comma-separated values (.csv)"
-   - Click "Publish"
-   - Copy the URL provided
-
-3. **Configure the Website**:
-   - Open `js/inventory.js`
-   - Find the line: `const GOOGLE_SHEET_CSV_URL = 'YOUR_GOOGLE_SHEETS_PUBLISHED_CSV_URL_HERE';`
-   - Replace with your published CSV URL
-
-4. **Weekly Update Process**:
-   - Export inventory from your POS system as CSV
-   - Open Google Sheets
-   - Delete all rows except the header
-   - Paste new data from POS export
-   - The website will automatically use the updated data
-
-### Local CSV Setup (Alternative)
-
-1. Export inventory from your POS system as CSV
-2. Format with columns: Product Name, Category, Brand, Price, Quantity, Last Updated
-3. Save as `data/inventory.csv`
-4. In `js/inventory.js`, change: `const DATA_SOURCE = 'local';`
-
-## Contact Form Setup
-
-The contact form needs a backend to process submissions. Free options:
-
-### Formspree (Recommended)
-
-1. Go to formspree.io and create a free account
-2. Create a new form
-3. Copy your form endpoint URL
-4. In `contact.html`, update the form action:
-   ```html
-   <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-   ```
-
-### Netlify Forms (If hosting on Netlify)
-
-1. Add `netlify` attribute to the form:
-   ```html
-   <form name="contact" method="POST" netlify>
-   ```
-2. Netlify will automatically handle submissions
-
-## Adding a Google Map
-
-1. Go to Google Maps and find your location
-2. Click "Share" > "Embed a map"
-3. Copy the iframe code
-4. In `contact.html`, replace `[Google Map embed goes here]` with the iframe
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-- Mobile browsers
-
-## Maintenance Tips
-
-1. **Keep announcements fresh**: Update the announcement cards on the home page regularly
-2. **Update inventory weekly**: Export from POS > Update Google Sheet
-3. **Test on mobile**: Always check changes on a phone
-4. **Backup regularly**: Keep a copy of your files locally
-
-## Getting Help
-
-- For website issues, check the browser console (F12) for errors
-- For hosting issues, consult GitHub Pages or Netlify documentation
-- For general questions, contact the person who set up the site
-
-## License
-
-This website template was created for Kent Natural Foods Co-op.
+Let me know if anything looks off — happy to fix.

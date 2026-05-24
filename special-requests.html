@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Special Requests | Kent Natural Foods Co-op</title>
-    <meta name="description" content="Request special products or place custom orders at Kent Natural Foods Co-op. We're here to help you find what you need.">
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Special Requests · Kent Natural Foods Co-op</title>
+    <meta name="description" content="Request special products or place custom orders at Kent Natural Foods Co-op. If our distributors carry it, we'll do our best to bring it in.">
+    <link rel="stylesheet" href="css/styles.css?v=2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -16,8 +16,9 @@
     <main>
         <section class="page-header">
             <div class="container">
-                <h1>Special Requests</h1>
-                <p>Can't find what you're looking for? Let us help!</p>
+                <div class="pre">— Can't find what you're looking for? —</div>
+                <h1>Make a <em>special request</em>.</h1>
+                <p>If our distributors carry it and it meets our standards, we'll do our best to bring it in.</p>
             </div>
         </section>
 
@@ -25,46 +26,36 @@
             <div class="container">
                 <div class="contact-grid">
                     <div class="contact-form">
-                        <h2>Request a Product</h2>
-                        <p class="mb-2">Looking for a specific product we don't currently carry? Need to place a bulk or special order? Fill out the form below and our team will do our best to accommodate your request.</p>
+                        <h2>Request a <em>product</em>.</h2>
+                        <p class="mb-2">Looking for a specific product we don't currently carry? Need a bulk or special order? Fill out the form and our buyers will get back to you.</p>
 
-                        <!--
-                            NOTE: This form needs a backend to process submissions.
-                            Options for static hosting:
-                            1. Use Formspree (formspree.io) - free tier available
-                            2. Use Netlify Forms (if hosting on Netlify)
-                            3. Use Google Forms embedded
-
-                            To use Formspree, replace the action URL:
-                            action="https://formspree.io/f/YOUR_FORM_ID"
-                        -->
                         <form action="#" method="POST" id="special-request-form">
                             <div class="form-group">
-                                <label for="name">Your Name *</label>
+                                <label for="name">Your name *</label>
                                 <input type="text" id="name" name="name" required>
                             </div>
                             <div class="form-group">
-                                <label for="email">Email Address *</label>
+                                <label for="email">Email address *</label>
                                 <input type="email" id="email" name="email" required>
                             </div>
                             <div class="form-group">
-                                <label for="phone">Phone Number</label>
+                                <label for="phone">Phone number</label>
                                 <input type="tel" id="phone" name="phone">
                             </div>
                             <div class="form-group">
-                                <label for="request-type">Request Type *</label>
+                                <label for="request-type">Request type *</label>
                                 <select id="request-type" name="request-type" required>
-                                    <option value="">Select request type...</option>
-                                    <option value="new-product">New Product Request</option>
-                                    <option value="bulk-order">Bulk Order</option>
-                                    <option value="special-order">Special Order (one-time)</option>
-                                    <option value="seasonal">Seasonal Item Request</option>
-                                    <option value="dietary">Dietary-Specific Product</option>
+                                    <option value="">Select request type…</option>
+                                    <option value="new-product">New product request</option>
+                                    <option value="bulk-order">Bulk order</option>
+                                    <option value="special-order">Special order (one-time)</option>
+                                    <option value="seasonal">Seasonal item request</option>
+                                    <option value="dietary">Dietary-specific product</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="product-name">Product Name/Description *</label>
+                                <label for="product-name">Product name / description *</label>
                                 <input type="text" id="product-name" name="product-name" placeholder="e.g., Organic Quinoa Flour, Brand Name Kombucha" required>
                             </div>
                             <div class="form-group">
@@ -72,30 +63,30 @@
                                 <input type="text" id="brand" name="brand" placeholder="Optional">
                             </div>
                             <div class="form-group">
-                                <label for="quantity">Quantity Needed</label>
+                                <label for="quantity">Quantity needed</label>
                                 <input type="text" id="quantity" name="quantity" placeholder="e.g., 5 units, 10 lbs, case of 12">
                             </div>
                             <div class="form-group">
-                                <label for="department">Department/Category</label>
+                                <label for="department">Department / category</label>
                                 <select id="department" name="department">
-                                    <option value="">Select department...</option>
+                                    <option value="">Select department…</option>
                                     <option value="produce">Produce</option>
-                                    <option value="bulk">Bulk Foods</option>
-                                    <option value="dairy">Dairy & Refrigerated</option>
+                                    <option value="bulk">Bulk foods</option>
+                                    <option value="dairy">Dairy &amp; refrigerated</option>
                                     <option value="frozen">Frozen</option>
-                                    <option value="grocery">Grocery/Packaged Goods</option>
-                                    <option value="supplements">Vitamins & Supplements</option>
-                                    <option value="body-care">Body Care</option>
+                                    <option value="grocery">Grocery / packaged</option>
+                                    <option value="supplements">Vitamins &amp; supplements</option>
+                                    <option value="body-care">Body care</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="details">Additional Details *</label>
-                                <textarea id="details" name="details" rows="5" placeholder="Please provide any additional information: Why are you requesting this product? Is this a one-time need or ongoing? Are there similar products you've seen elsewhere?" required></textarea>
+                                <label for="details">Additional details *</label>
+                                <textarea id="details" name="details" rows="5" placeholder="Anything else worth knowing: why you're asking, ongoing or one-time, similar products you've seen, etc." required></textarea>
                             </div>
                             <div class="form-group">
-                                <label>
-                                    <input type="checkbox" name="member" value="yes">
+                                <label style="font-family: var(--font-body); font-size: 14px; letter-spacing: 0; text-transform: none; color: var(--color-gray-dark);">
+                                    <input type="checkbox" name="member" value="yes" style="width: auto; margin-right: 8px;">
                                     I am a KNFC member
                                 </label>
                             </div>
@@ -105,40 +96,36 @@
 
                     <div class="contact-info-section">
                         <div class="contact-info-card">
-                            <h3>How It Works</h3>
-                            <ol style="padding-left: 1.5rem; line-height: 1.8;">
-                                <li><strong>Submit Your Request</strong><br>Fill out the form with as much detail as possible.</li>
-                                <li><strong>We Review</strong><br>Our buyers will evaluate the request and check with our suppliers.</li>
-                                <li><strong>Get a Response</strong><br>We'll contact you within 3-5 business days with availability and pricing.</li>
-                                <li><strong>Order Fulfillment</strong><br>Once confirmed, we'll let you know when your product arrives!</li>
+                            <h3>How it works</h3>
+                            <ol style="padding-left: 1.4em; line-height: 1.7; font-family: var(--font-editorial); font-size: 15px;">
+                                <li style="margin-bottom: 12px;"><strong>Submit your request.</strong><br>Fill out the form with as much detail as possible.</li>
+                                <li style="margin-bottom: 12px;"><strong>We review.</strong><br>Our buyers evaluate the request and check with suppliers.</li>
+                                <li style="margin-bottom: 12px;"><strong>You hear back.</strong><br>We'll contact you within 3–5 business days with availability and pricing.</li>
+                                <li><strong>Order fulfillment.</strong><br>Once confirmed, we'll let you know when your product arrives.</li>
                             </ol>
                         </div>
 
                         <div class="contact-info-card">
-                            <h3>Good to Know</h3>
-                            <ul style="padding-left: 1.5rem; line-height: 1.8;">
-                                <li>Not all requests can be fulfilled, but we'll do our best!</li>
-                                <li>Special orders may require advance payment or deposits.</li>
+                            <h3>Good to know</h3>
+                            <ul style="padding-left: 1.4em; line-height: 1.7; font-family: var(--font-editorial); font-size: 15px;">
+                                <li>Not every request can be fulfilled, but we'll always try.</li>
+                                <li>Special orders may require advance payment or a deposit.</li>
                                 <li>Member requests receive priority consideration.</li>
                                 <li>Bulk orders may qualify for volume discounts.</li>
-                                <li>Some items may have minimum order quantities.</li>
+                                <li>Some items have minimum order quantities.</li>
                             </ul>
                         </div>
 
                         <div class="contact-info-card">
                             <h3>Questions?</h3>
-                            <p>If you have questions about the special request process, feel free to call us or stop by the store.</p>
+                            <p>Call the store, email us, or stop by the customer service counter.</p>
                             <p>
                                 <strong>Phone:</strong><br>
-                                <a href="tel:[PHONE]">[Phone Number]</a>
+                                <a href="tel:3306732878">(330) 673-2878</a>
                             </p>
                             <p>
                                 <strong>Email:</strong><br>
-                                <a href="mailto:[EMAIL]">[Email Address]</a>
-                            </p>
-                            <p>
-                                <strong>In-Store:</strong><br>
-                                Ask for a buyer or manager at the customer service desk.
+                                <a href="mailto:hello@kentnaturalfoods.coop">hello@kentnaturalfoods.coop</a>
                             </p>
                         </div>
                     </div>
@@ -148,23 +135,23 @@
 
         <section class="content-section alt-bg">
             <div class="container">
-                <h2 class="text-center">Popular Request Types</h2>
+                <h2 class="text-center">Popular <em>request types</em>.</h2>
                 <div class="content-grid mt-2">
                     <div class="content-card">
-                        <h3>Local Products</h3>
-                        <p>Looking for products from local farms or producers? We're always interested in expanding our local selection!</p>
+                        <h3>Local products</h3>
+                        <p>Looking for products from local farms or producers? We're always interested in expanding our local selection.</p>
                     </div>
                     <div class="content-card">
-                        <h3>Dietary Needs</h3>
-                        <p>Need gluten-free, vegan, keto, or allergen-friendly products? Let us know what would help you.</p>
+                        <h3>Dietary needs</h3>
+                        <p>Need gluten-free, vegan, keto, or allergen-friendly products? Tell us what would help.</p>
                     </div>
                     <div class="content-card">
-                        <h3>Bulk Orders</h3>
+                        <h3>Bulk orders</h3>
                         <p>Planning an event or stocking up? We can help with larger quantities at better prices.</p>
                     </div>
                     <div class="content-card">
-                        <h3>Hard-to-Find Items</h3>
-                        <p>Can't find that specialty ingredient or ethnic food product? We have access to many distributors.</p>
+                        <h3>Hard-to-find items</h3>
+                        <p>Specialty ingredient or international food product? We have access to many distributors.</p>
                     </div>
                 </div>
             </div>
