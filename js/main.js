@@ -272,4 +272,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Update hero "Open today" badge based on STORE_INFO.hours
+    (function updateHeroOpenBadge() {
+        try {
+            const badge = document.getElementById('hero-open-badge');
+            if (!badge) return;
+            const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            let hoursText = '';
+            if (today === 0) {
+                hoursText = STORE_INFO.hours.sunday;
+            } else if (today === 6) {
+                hoursText = STORE_INFO.hours.saturday || STORE_INFO.hours.weekday;
+            } else {
+                hoursText = STORE_INFO.hours.weekday;
+            }
+            badge.textContent = `Open today, ${hoursText}`;
+        } catch (err) {
+            // Fail silently — badge is non-critical
+            console.error('Failed to update hero open badge', err);
+        }
+    })();
 });
