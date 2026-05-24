@@ -69,12 +69,23 @@ window.SUN_MARK_SVG = SUN_MARK_SVG;
 
 function getHeaderHTML() {
     const tel = STORE_INFO.phone.replace(/[^0-9]/g, '');
+    // Compute today's hours for the utility ribbon
+    const _today = new Date().getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    let _hoursForToday;
+    if (_today === 0) {
+        _hoursForToday = STORE_INFO.hours.sunday;
+    } else if (_today === 6) {
+        _hoursForToday = STORE_INFO.hours.saturday || STORE_INFO.hours.weekday;
+    } else {
+        _hoursForToday = STORE_INFO.hours.weekday;
+    }
+    const openRibbonText = `Open today · ${_hoursForToday}`;
     return `
     <!-- Utility ribbon -->
     <div class="utility-ribbon">
         <div class="container">
             <div>
-                Open today · ${STORE_INFO.hours.weekday}
+                ${openRibbonText}
                 <span class="dot">●</span>
                 ${STORE_INFO.address.street}, ${STORE_INFO.address.city} ${STORE_INFO.address.state}
                 <span class="dot">●</span>
