@@ -64,12 +64,58 @@ const SUN_MARK_SVG = `
 window.SUN_MARK_SVG = SUN_MARK_SVG;
 
 // ============================================================================
+// Hours / timezone helpers
+// ============================================================================
+
+function _nowInTimeZone(timeZone) {
+    // Create a Date representing the current time in the given IANA time zone
+    // by formatting to a locale string in that zone and parsing back into Date.
+    // This is broadly compatible in browsers.
+    const parts = new Date().toLocaleString('en-US', { timeZone });
+    return new Date(parts);
+}
+
+function _parseTimeToMinutes(t) {
+    if (!t) return null;
+    t = t.trim().toLowerCase();
+    if (t === 'noon') return 12 * 60;
+    if (t === 'midnight') return 0;
+    // match h[:mm] am/pm
+    const m = t.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/);
+    if (!m) return null;
+    let hh = parseInt(m[1], 10);
+    const mm = parseInt(m[2] || '0', 10);
+    const ampm = m[3];
+    if (ampm === 'pm' && hh !== 12) hh += 12;
+    if (ampm === 'am' && hh === 12) hh = 0;
+    return hh * 60 + mm;
+}
+
+function _hoursRangeIncludesNow(hoursRangeStr, timeZone = 'America/New_York') {
+    if (!hoursRangeStr) return false;
+    const parts = hoursRangeStr.split(/[–-]/).map(s => s.trim());
+    if (parts.length < 2) return false;
+    const start = _parseTimeToMinutes(parts[0]);
+    const end = _parseTimeToMinutes(parts[1]);
+    if (start == null || end == null) return false;
+    const now = _nowInTimeZone(timeZone);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    // Simple inclusive range check. If end < start assume it passes midnight.
+    if (end >= start) {
+        return nowMinutes >= start && nowMinutes <= end;
+    }
+    // crosses midnight
+    return nowMinutes >= start || nowMinutes <= end;
+}
+
+
+// ============================================================================
 // HEADER
 // ============================================================================
 
 function getHeaderHTML() {
     const tel = STORE_INFO.phone.replace(/[^0-9]/g, '');
-    // Compute today's hours for the utility ribbon
+    // Compute today's hours for the utility ribbon (and whether open now)
     const _today = new Date().getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     let _hoursForToday;
     if (_today === 0) {
@@ -79,7 +125,9 @@ function getHeaderHTML() {
     } else {
         _hoursForToday = STORE_INFO.hours.weekday;
     }
-    const openRibbonText = `Open today · ${_hoursForToday}`;
+    const _isOpenNow = _hoursRangeIncludesNow(_hoursForToday, 'America/New_York');
+    const _startPart = (_hoursForToday || '').split(/[–-]/)[0] || '';
+    const openRibbonText = _isOpenNow ? `Open today · ${_hoursForToday}` : `Closed now · Opens ${_startPart.trim()}`;
     return `
     <!-- Utility ribbon -->
     <div class="utility-ribbon">
@@ -284,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Update hero "Open today" badge based on STORE_INFO.hours
+    // Update hero "Open today" badge based on STORE_INFO.hours and timezone
     (function updateHeroOpenBadge() {
         try {
             const badge = document.getElementById('hero-open-badge');
@@ -298,7 +346,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 hoursText = STORE_INFO.hours.weekday;
             }
-            badge.textContent = `Open today, ${hoursText}`;
+            const isOpen = _hoursRangeIncludesNow(hoursText, 'America/New_York');
+            const startPart = (hoursText || '').split(/[–-]/)[0] || '';
+            badge.textContent = isOpen ? `Open today, ${hoursText}` : `Closed now · Opens ${startPart.trim()}`;
         } catch (err) {
             // Fail silently — badge is non-critical
             console.error('Failed to update hero open badge', err);
