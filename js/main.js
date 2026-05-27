@@ -491,14 +491,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const container = document.querySelector('.utility-ribbon .container') || document.body;
             container.insertBefore(el, container.firstChild);
         }
-        // Build a clear, date-prefixed banner: "Closed on YYYY-MM-DD: message" or
-        // "Restricted hours on YYYY-MM-DD: message". If no date is provided, fall back to message only.
-        let prefix = '';
+        // Format the banner as:
+        // - Closed for <message> (YYYY-MM-DD)
+        // - Restricted hours for <message> (YYYY-MM-DD)
+        // If no date is provided, fall back to message only.
+        let text = message || 'Holiday — shop may have restricted hours or be closed.';
         if (dateStr) {
-            if (status === 'closed') prefix = `Closed on ${dateStr}: `;
-            else prefix = `Restricted hours on ${dateStr}: `;
+            if (status === 'closed') {
+                text = `Closed for ${text} (${dateStr})`;
+            } else {
+                text = `Restricted hours for ${text} (${dateStr})`;
+            }
         }
-        el.textContent = prefix + (message || 'Holiday — shop may have restricted hours or be closed.');
+        el.textContent = text;
         el.className = 'holiday-alert';
         if (status === 'closed') el.classList.add('closed');
     }
