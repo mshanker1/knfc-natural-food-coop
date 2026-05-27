@@ -4,7 +4,7 @@
  *
  * Loads four content types from various sources:
  *   - Announcements  → homepage bulletin board
- *   - Sales Flyer    → PDF embed on products page
+ *   - Sales Items    → sale cards on products page (replaces PDF embed)
  *   - Staff Picks    → department highlights on products page
  *   - Education      → learn & explore resources on products page
  *
@@ -39,12 +39,11 @@
  * 1. Place CSV files in /data folder
  * 2. Set CONTENT_SOURCE = 'local'
  *
- * SALES FLYER PDF:
- * ================
- * 1. Upload your flyer PDF to Google Drive
- * 2. Right-click > Share > Anyone with the link can view
- * 3. Copy the share link (looks like: drive.google.com/file/d/FILEID/view)
- * 4. Paste that link into the PDF_URL column of the Sales CSV
+ * SALES ITEMS:
+ * ============
+ * Edit sales.csv — one row per sale item. Columns:
+ *   Item | Description | Sale_Price | Regular_Price | Start_Date | End_Date | Active
+ * Set Active = "yes" to show, "no" to hide. Upload to your Google Drive folder.
  */
 
 // ============================================
@@ -158,19 +157,6 @@ function safeUrl(raw) {
     return (u.startsWith('https://') || u.startsWith('http://')) ? u : '';
 }
 
-// Detect unfilled placeholder values in the CSV templates
-function isPlaceholder(str) {
-    return !str || str.includes('YOUR_') || str.includes('REPLACE_') || str === '#';
-}
-
-// Convert a Google Drive share URL to an embeddable preview URL
-function driveEmbedUrl(shareUrl) {
-    if (shareUrl.includes('drive.google.com/file/d/')) {
-        return shareUrl.replace(/\/(view|edit)(\?.*)?$/, '/preview');
-    }
-    return shareUrl;
-}
-
 // ============================================
 // ANNOUNCEMENTS
 // Targets: #announcement-cards on index.html
@@ -210,73 +196,50 @@ async function loadAnnouncements() {
 }
 
 // ============================================
-// SALES FLYER — PDF EMBED
-// Targets: #sales-flyer-container on products.html
-// CSV columns: Title | PDF_URL | Start_Date | End_Date | Active
+// SALES ITEMS — text cards
+// Targets: #sales-items-container on products.html
+// CSV columns: Item | Description | Sale_Price | Regular_Price | Start_Date | End_Date | Active
 //
-// PDF_URL should be a Google Drive share link:
-//   https://drive.google.com/file/d/FILE_ID/view?usp=sharing
-// The script converts it to an embeddable /preview URL automatically.
+// To update sales: edit sales.csv and upload to your Google Drive folder.
+// Add one row per sale item. Set Active to "yes" to show, "no" to hide.
 // ============================================
 
-async function loadSalesFlyer() {
-    const container = document.getElementById('sales-flyer-container');
+async function loadSalesItems() {
+    const container = document.getElementById('sales-items-container');
     if (!container) return;
 
     try {
-        const csvText = await fetchCSV(contentUrl(LOCAL_SALES, GS_SALES, FILENAME_SALES));
-        const rows = parseCSV(csvText)
+        const rows = parseCSV(await fetchCSV(contentUrl(LOCAL_SALES, GS_SALES, FILENAME_SALES)))
             .filter(r => (r.Active || '').toLowerCase() === 'yes');
 
         if (!rows.length) {
-            container.innerHTML = '<p class="no-content">No active sales flyer right now. Check back soon!</p>';
+            container.innerHTML = '<p class="no-content">No active sales right now. Check back soon!</p>';
             return;
         }
 
-        const flyer = rows[0];
-        const rawUrl = flyer.PDF_URL || '';
-        const pdfUrl = safeUrl(rawUrl);
-
-        // Show a placeholder card if the URL hasn't been filled in yet
-        if (isPlaceholder(rawUrl) || !pdfUrl) {
-            container.innerHTML = `
-                <div class="flyer-placeholder">
-                    <div class="flyer-placeholder-icon">&#128240;</div>
-                    <h3>${esc(flyer.Title || 'Sales Flyer')}</h3>
-                    ${flyer.End_Date ? `<p>Valid through <strong>${esc(flyer.End_Date)}</strong></p>` : ''}
-                    <p class="placeholder-note">
-                        To display the flyer: upload your PDF to Google Drive, set sharing to
-                        "Anyone with the link," then paste the share URL into the
-                        <code>PDF_URL</code> column of the <code>sales.csv</code> file
-                        (or the Sales tab in your Google Sheet).
-                    </p>
-                </div>
+        container.innerHTML = rows.map(r => {
+            const hasDiscount = r.Regular_Price && r.Regular_Price !== r.Sale_Price;
+            const dates = (r.Start_Date && r.End_Date)
+                ? `${esc(r.Start_Date)} – ${esc(r.End_Date)}`
+                : (r.End_Date ? `Through ${esc(r.End_Date)}` : '');
+            return `
+                <article class="sale-card">
+                    <div class="sale-card-meta">
+                        ${dates ? `<span class="sale-dates">${dates}</span>` : ''}
+                    </div>
+                    <h3>${esc(r.Item)}</h3>
+                    ${r.Description ? `<p class="sale-description">${esc(r.Description)}</p>` : ''}
+                    <div class="sale-pricing">
+                        <span class="sale-price">${esc(r.Sale_Price)}</span>
+                        ${hasDiscount ? `<span class="regular-price">${esc(r.Regular_Price)}</span>` : ''}
+                    </div>
+                </article>
             `;
-            return;
-        }
-
-        const embedUrl = driveEmbedUrl(pdfUrl);
-        container.innerHTML = `
-            <div class="flyer-header">
-                <div class="flyer-header-text">
-                    <h3>${esc(flyer.Title)}</h3>
-                    ${flyer.End_Date ? `<p class="flyer-dates">Valid through ${esc(flyer.End_Date)}</p>` : ''}
-                </div>
-                <a href="${pdfUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
-                    Open Full Flyer &#8599;
-                </a>
-            </div>
-            <div class="pdf-embed-wrapper">
-                <iframe src="${embedUrl}"
-                        class="sales-pdf-embed"
-                        loading="lazy"
-                        title="Sales Flyer — ${esc(flyer.Title)}"></iframe>
-            </div>
-        `;
+        }).join('');
 
     } catch (e) {
-        console.error('Sales flyer error:', e);
-        container.innerHTML = '<p class="no-content">Unable to load sales flyer.</p>';
+        console.error('Sales error:', e);
+        container.innerHTML = '<p class="no-content">Unable to load sales.</p>';
     }
 }
 
@@ -370,7 +333,7 @@ async function loadEducation() {
 
 document.addEventListener('DOMContentLoaded', function () {
     loadAnnouncements();
-    loadSalesFlyer();
+    loadSalesItems();
     loadHighlights();
     loadEducation();
 });

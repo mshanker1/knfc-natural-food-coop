@@ -1436,7 +1436,7 @@ p { text-wrap: pretty; }
     line-height: 1.55;
 }
 
-/* SALES FLYER */
+/* SALES ITEMS */
 .sales-section {
     padding: var(--spacing-xl) 0;
     background-color: var(--color-cream);
@@ -1446,68 +1446,74 @@ p { text-wrap: pretty; }
     font-family: var(--font-display);
     margin-bottom: var(--spacing-xs);
 }
-.sales-flyer-container {
+
+/* Grid of sale cards — mirrors announcement-cards layout */
+.sales-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.sale-card {
     background-color: var(--color-paper);
-    border-radius: var(--radius-md);
-    overflow: hidden;
     border: 1px solid var(--color-rule);
-}
-.flyer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    border-radius: var(--radius-md);
     padding: var(--spacing-md);
-    border-bottom: 1px solid var(--color-rule);
-    background-color: var(--color-cream);
-    flex-wrap: wrap;
-    gap: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
-.flyer-header-text h3 {
-    color: var(--color-maroon);
-    margin-bottom: 4px;
+
+.sale-card h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--color-ink);
+    margin: 0;
+    line-height: 1.3;
 }
-.flyer-dates {
+
+.sale-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.sale-dates {
     font-family: var(--font-mono);
     font-size: 11px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.10em;
     color: var(--color-gray);
     text-transform: uppercase;
+}
+
+.sale-description {
+    font-size: 14px;
+    color: var(--color-gray-dark);
     margin: 0;
+    line-height: 1.45;
 }
-.pdf-embed-wrapper { width: 100%; background-color: var(--color-paper); }
-.sales-pdf-embed {
-    display: block;
-    width: 100%;
-    height: 680px;
-    border: none;
+
+.sale-pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: var(--spacing-xs);
 }
-.flyer-placeholder {
-    text-align: center;
-    padding: var(--spacing-xl) var(--spacing-md);
-    background-color: var(--color-cream);
-}
-.flyer-placeholder-icon { display: none; }
-.flyer-placeholder h3 {
+
+.sale-price {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
     color: var(--color-maroon);
-    margin-bottom: var(--spacing-xs);
 }
-.placeholder-note {
+
+.regular-price {
     font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.05em;
+    font-size: 13px;
     color: var(--color-gray);
-    margin-top: var(--spacing-sm);
-    max-width: 520px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.6;
-}
-.placeholder-note code {
-    background-color: var(--color-rule);
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
-    font-size: 11px;
-    font-family: var(--font-mono);
+    text-decoration: line-through;
 }
 
 /* STAFF PICKS */
