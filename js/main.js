@@ -445,6 +445,15 @@ document.addEventListener('DOMContentLoaded', function() {
     async function fetchHolidays(year) {
         const cacheKey = `knfc_holidays_${year}`;
         try {
+            // If developer forces a reload via URL param, clear cached entry
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (params.has('forceHolidaysReload') || params.has('nocache')) {
+                    localStorage.removeItem(cacheKey);
+                    console.info('Holiday cache cleared via URL param');
+                }
+            } catch (e) {}
+
             const cached = localStorage.getItem(cacheKey);
             if (cached) return JSON.parse(cached);
         } catch (e) { /* ignore localStorage errors */ }
