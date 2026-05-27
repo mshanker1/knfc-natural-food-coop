@@ -218,13 +218,20 @@ function handleConsolidateRequest(filename) {
  * Department name is inferred from the filename (without extension).
  */
 function buildDepartmentMap(folder, skipFilename) {
-  var files = folder.getFiles();
+  // Prefer a 'departments' subfolder if present; otherwise scan the main folder.
+  var deptFolder = folder;
+  var subFolders = folder.getFoldersByName('departments');
+  if (subFolders.hasNext()) {
+    deptFolder = subFolders.next();
+  }
+
+  var files = deptFolder.getFiles();
   var map = {};
 
   while (files.hasNext()) {
     var f = files.next();
     var name = f.getName();
-    if (!name.endsWith('.csv')) continue;
+    if (!name.toLowerCase().endsWith('.csv')) continue;
     if (name === skipFilename) continue;
     if (name === 'inventory.csv') continue;
 
