@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function formatDateYMD(d) { return d.toISOString().slice(0,10); }
 
-    function showHolidayMessage(text, status) {
+    function showHolidayMessage(message, status, dateStr) {
         let el = document.getElementById('holiday-alert');
         if (!el) {
             el = document.createElement('div');
@@ -491,7 +491,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const container = document.querySelector('.utility-ribbon .container') || document.body;
             container.insertBefore(el, container.firstChild);
         }
-        el.textContent = text;
+        // Build a clear, date-prefixed banner: "Closed on YYYY-MM-DD: message" or
+        // "Restricted hours on YYYY-MM-DD: message". If no date is provided, fall back to message only.
+        let prefix = '';
+        if (dateStr) {
+            if (status === 'closed') prefix = `Closed on ${dateStr}: `;
+            else prefix = `Restricted hours on ${dateStr}: `;
+        }
+        el.textContent = prefix + (message || 'Holiday — shop may have restricted hours or be closed.');
         el.className = 'holiday-alert';
         if (status === 'closed') el.classList.add('closed');
     }
@@ -506,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // apply overrides map: { "2026-12-25": {"status":"closed","message":"Closed for Christmas"} }
             if (overrides && overrides[todayY]) {
                 const o = overrides[todayY];
-                showHolidayMessage(o.message || 'Holiday — Shop may have restricted hours or be closed.', o.status || 'restricted');
+                showHolidayMessage(o.message || 'Holiday — Shop may have restricted hours or be closed.', o.status || 'restricted', todayY);
                 return;
             }
 
@@ -521,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (overrideDates.length) {
                     const od = overrideDates[0];
                     const o = overrides[od.dateStr];
-                    showHolidayMessage(o.message || `Upcoming: ${od.dateStr} — Shop may have restricted hours or be closed. Please check.`, o.status);
+                    showHolidayMessage(o.message || `Upcoming: ${od.dateStr} — Shop may have restricted hours or be closed. Please check.`, o.status, od.dateStr);
                     return;
                 }
             } catch (e) {
@@ -530,7 +537,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const todayHoliday = (holidays || []).find(h => h.date === todayY);
             if (todayHoliday) {
-                showHolidayMessage(`${todayHoliday.localName || todayHoliday.name} — Shop may have restricted hours or be closed. Please check.`);
+                const msg = `${todayHoliday.localName || todayHoliday.name} — Shop may have restricted hours or be closed. Please check.`;
+                showHolidayMessage(msg, 'restricted', todayHoliday.date);
                 return;
             }
 
@@ -540,9 +548,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const h = upcoming[0];
                 const override = overrides && overrides[h.date];
                 if (override) {
-                    showHolidayMessage(override.message || `Upcoming: ${h.localName || h.name} — Shop may have restricted hours or be closed. Please check.`, override.status);
+                    showHolidayMessage(override.message || `Upcoming: ${h.localName || h.name} — Shop may have restricted hours or be closed. Please check.`, override.status, h.date);
                 } else {
-                    showHolidayMessage(`Upcoming: ${h.localName || h.name} (${h.date}) — Shop may have restricted hours or be closed. Please check.`);
+                    const msg = `${h.localName || h.name} — Shop may have restricted hours or be closed. Please check.`;
+                    showHolidayMessage(msg, 'restricted', h.date);
                 }
             }
         } catch (err) {
