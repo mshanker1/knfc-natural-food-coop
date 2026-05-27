@@ -1069,7 +1069,9 @@ p { text-wrap: pretty; }
 .filter-select:focus { outline: none; border-color: var(--color-maroon); }
 
 .inventory-table-wrapper {
-    overflow-x: auto;
+    /* Limit height so the table scrolls internally rather than the whole page */
+    max-height: 620px;
+    overflow: auto;
     background-color: var(--color-cream);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-rule);
@@ -1128,6 +1130,27 @@ p { text-wrap: pretty; }
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-gray);
+}
+
+/* Pagination controls for inventory listing */
+.pagination-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 10px;
+}
+.pagination-controls .btn { padding: 8px 12px; font-size: 13px; }
+.pagination-info {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-gray-dark);
+    margin: 0 6px;
+}
+
+.pagination-controls .btn[disabled] {
+    opacity: 0.45;
+    cursor: default;
 }
 
 /* =====================================================

@@ -94,6 +94,10 @@ const LOW_STOCK_THRESHOLD = 5;  // Show "Low Stock" when quantity is at or below
 
 // Store for inventory data
 let inventoryData = [];
+// Pagination/config
+const ITEMS_PER_PAGE = 20;
+let currentPage = 1;
+let currentFilteredProducts = [];
 
 // DOM Elements
 const loadingEl = document.getElementById('loading');
@@ -303,26 +307,43 @@ function populateCategories() {
  * Render inventory table
  */
 function renderInventory(products) {
+    // Store filtered set and reset to first page
+    currentFilteredProducts = products || [];
+    currentPage = 1;
+    renderPage();
+}
+
+/**
+ * Render the current page of products (pagination)
+ */
+function renderPage() {
     tableBodyEl.innerHTML = '';
 
-    if (products.length === 0) {
+    if (!currentFilteredProducts || currentFilteredProducts.length === 0) {
         const row = document.createElement('tr');
         row.innerHTML = '<td colspan="5" style="text-align: center; padding: 2rem;">No products found matching your search.</td>';
         tableBodyEl.appendChild(row);
+        renderPaginationControls();
+        lastUpdatedEl.textContent = `Showing 0 of ${inventoryData.length} products`;
         return;
     }
 
-    products.forEach(product => {
+    const total = currentFilteredProducts.length;
+    const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, total);
+    const pageItems = currentFilteredProducts.slice(startIndex, endIndex);
+
+    pageItems.forEach(product => {
         const row = document.createElement('tr');
 
-        // Handle both old property names (upc, name) and CSV column names (UPC, Item Name)
         const upc = product.upc || product.UPC || product['UPC'] || '';
         const name = product.name || product['Item Name'] || '';
         const department = product.department || product.Department || product['Department'] || '';
         const quantity = product.quantity || parseInt(product.Remaining || product['Remaining'] || 0);
         const price = product.price || parsePrice(product['Sales Price'] || product['Sales Price'] || '0');
-
-        const status = getStockStatus(quantity);
 
         row.innerHTML = `
             <td>${escapeHtml(upc)}</td>
@@ -335,12 +356,56 @@ function renderInventory(products) {
         tableBodyEl.appendChild(row);
     });
 
-    // Update last updated text
-    if (inventoryData.length > 0 && inventoryData[0].lastUpdated) {
-        lastUpdatedEl.textContent = `Last updated: ${inventoryData[0].lastUpdated}`;
-    } else {
-        lastUpdatedEl.textContent = `Showing ${products.length} of ${inventoryData.length} products`;
-    }
+    // Update last updated / range info
+    lastUpdatedEl.textContent = `Showing ${startIndex + 1}-${endIndex} of ${inventoryData.length} products`;
+
+    renderPaginationControls();
+}
+
+/**
+ * Render simple pagination controls (Prev / Page X of Y / Next)
+ */
+function renderPaginationControls() {
+    const container = document.getElementById('pagination-controls');
+    if (!container) return;
+
+    const total = currentFilteredProducts.length;
+    const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+
+    container.innerHTML = '';
+
+    const prev = document.createElement('button');
+    prev.className = 'btn btn-sm';
+    prev.textContent = 'Prev';
+    prev.disabled = currentPage <= 1;
+    prev.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderPage();
+            // scroll table into view for keyboard users
+            document.querySelector('.inventory-table-wrapper').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    const info = document.createElement('div');
+    info.className = 'pagination-info';
+    info.textContent = `Page ${currentPage} of ${totalPages}`;
+
+    const next = document.createElement('button');
+    next.className = 'btn btn-sm';
+    next.textContent = 'Next';
+    next.disabled = currentPage >= totalPages;
+    next.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderPage();
+            document.querySelector('.inventory-table-wrapper').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    container.appendChild(prev);
+    container.appendChild(info);
+    container.appendChild(next);
 }
 
 /**
