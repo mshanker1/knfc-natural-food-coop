@@ -440,4 +440,90 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Failed to update hero open badge', err);
         }
     })();
+
+    // Holidays: fetch US federal holidays and optional local overrides
+    async function fetchHolidays(year) {
+        const cacheKey = `knfc_holidays_${year}`;
+        try {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) return JSON.parse(cached);
+        } catch (e) { /* ignore localStorage errors */ }
+
+        try {
+            const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/US`);
+            if (!res.ok) throw new Error('Holiday API error');
+            const data = await res.json();
+            try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch (e) {}
+            return data;
+        } catch (err) {
+            console.warn('Failed to fetch holidays:', err);
+            return [];
+        }
+    }
+
+    async function fetchOverrides() {
+        try {
+            const res = await fetch('data/holidays-overrides.json');
+            if (!res.ok) return {};
+            return await res.json();
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function formatDateYMD(d) { return d.toISOString().slice(0,10); }
+
+    function showHolidayMessage(text, status) {
+        let el = document.getElementById('holiday-alert');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'holiday-alert';
+            el.setAttribute('role','status');
+            const container = document.querySelector('.utility-ribbon .container') || document.body;
+            container.insertBefore(el, container.firstChild);
+        }
+        el.textContent = text;
+        el.className = 'holiday-alert';
+        if (status === 'closed') el.classList.add('closed');
+    }
+
+    async function checkAndShowHolidays() {
+        try {
+            const today = new Date();
+            const year = today.getFullYear();
+            const [holidays, overrides] = await Promise.all([fetchHolidays(year), fetchOverrides()]);
+            const todayY = formatDateYMD(today);
+
+            // apply overrides map: { "2026-12-25": {"status":"closed","message":"Closed for Christmas"} }
+            if (overrides && overrides[todayY]) {
+                const o = overrides[todayY];
+                showHolidayMessage(o.message || 'Holiday — Shop may have restricted hours or be closed.', o.status || 'restricted');
+                return;
+            }
+
+            const todayHoliday = (holidays || []).find(h => h.date === todayY);
+            if (todayHoliday) {
+                showHolidayMessage(`${todayHoliday.localName || todayHoliday.name} — Shop may have restricted hours or be closed. Please check.`);
+                return;
+            }
+
+            // Next upcoming within 7 days
+            const upcoming = (holidays || []).map(h => ({...h, _d: new Date(h.date)})).filter(h => h._d > today && (h._d - today) <= 7*24*60*60*1000).sort((a,b)=>a._d-b._d);
+            if (upcoming.length) {
+                const h = upcoming[0];
+                const override = overrides && overrides[h.date];
+                if (override) {
+                    showHolidayMessage(override.message || `Upcoming: ${h.localName || h.name} — Shop may have restricted hours or be closed. Please check.`, override.status);
+                } else {
+                    showHolidayMessage(`Upcoming: ${h.localName || h.name} (${h.date}) — Shop may have restricted hours or be closed. Please check.`);
+                }
+            }
+        } catch (err) {
+            // silent failure
+            console.warn('Holiday check failed', err);
+        }
+    }
+
+    // Run holiday check after DOM is ready
+    checkAndShowHolidays();
 });

@@ -450,6 +450,20 @@ p { text-wrap: pretty; }
     align-items: end;
 }
 .info-card { background: transparent; padding: 0; }
+.holiday-alert {
+    background: linear-gradient(90deg, rgba(255,244,224,1), rgba(255,250,240,1));
+    color: var(--color-maroon);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin-right: 12px;
+}
+.holiday-alert.closed {
+    background: linear-gradient(90deg, #fff1f0, #fff6f5);
+    color: var(--color-brick);
+    font-weight: 600;
+}
 .info-card.info-title h2 {
     font-family: var(--font-display);
     font-size: 42px;
