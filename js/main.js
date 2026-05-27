@@ -510,6 +510,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // If there are any override entries within the next 7 days (but not today), show the nearest one.
+            try {
+                const now = new Date();
+                const in7 = 7 * 24 * 60 * 60 * 1000;
+                const overrideDates = Object.keys(overrides || {}).map(d => ({
+                    dateStr: d,
+                    date: new Date(d)
+                })).filter(o => o.date > now && (o.date - now) <= in7).sort((a,b)=>a.date-b.date);
+                if (overrideDates.length) {
+                    const od = overrideDates[0];
+                    const o = overrides[od.dateStr];
+                    showHolidayMessage(o.message || `Upcoming: ${od.dateStr} — Shop may have restricted hours or be closed. Please check.`, o.status);
+                    return;
+                }
+            } catch (e) {
+                // ignore malformed override entries
+            }
+
             const todayHoliday = (holidays || []).find(h => h.date === todayY);
             if (todayHoliday) {
                 showHolidayMessage(`${todayHoliday.localName || todayHoliday.name} — Shop may have restricted hours or be closed. Please check.`);
