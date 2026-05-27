@@ -52,3 +52,4 @@ tmp/
 
 # Archive folder (old/unnecessary files)
 archive/
+archive_untracked/
