@@ -47,6 +47,18 @@ const FOLDER_ID = '186FBV_BDcq3iSI_PVyrmWuLSGMTlzI8X';
  */
 function doGet(e) {
   try {
+    // Allow actions: list, consolidate
+    var action = e.parameter && e.parameter.action;
+    if (action === 'list') {
+      return createResponse(listFiles(), 200, 'text/plain');
+    }
+
+    if (action === 'consolidate') {
+      var fname = e.parameter.file || 'reports_inventory_listings_assets.csv';
+      var msg = handleConsolidateRequest(fname);
+      return createResponse(msg, 200, 'text/plain');
+    }
+
     // Get the filename from the URL parameter
     const filename = e.parameter.file;
 
@@ -154,4 +166,166 @@ function listFiles() {
   } catch (error) {
     return 'Error: ' + error.toString();
   }
+}
+
+/**
+ * Manual consolidation endpoint.
+ * Usage: ?action=consolidate&file=reports_inventory_listings_assets.csv
+ * If no file param is provided, defaults to 'reports_inventory_listings_assets.csv'.
+ */
+function handleConsolidateRequest(filename) {
+  filename = filename || 'reports_inventory_listings_assets.csv';
+  try {
+    var folder = DriveApp.getFolderById(FOLDER_ID);
+    var files = folder.getFilesByName(filename);
+    if (!files.hasNext()) {
+      return 'Error: Reports file not found: ' + filename;
+    }
+
+    var reportFile = files.next();
+    var reportContent = reportFile.getBlob().getDataAsString();
+
+    // Build department map from CSV files in the same folder
+    var deptMap = buildDepartmentMap(folder, filename);
+
+    var consolidated = buildConsolidatedCsv(reportContent, deptMap);
+
+    // Write or overwrite inventory.csv in the folder
+    var outName = 'inventory.csv';
+    var outFiles = folder.getFilesByName(outName);
+    if (outFiles.hasNext()) {
+      var outFile = outFiles.next();
+      outFile.setContent(consolidated);
+    } else {
+      folder.createFile(outName, consolidated, MimeType.CSV);
+    }
+
+    // Save last processed timestamp
+    var props = PropertiesService.getScriptProperties();
+    props.setProperty('LAST_PROCESSED_' + filename, new Date().toISOString());
+
+    return 'OK: consolidated ' + filename + ' -> ' + outName + ' (' + consolidated.split('\n').length + ' lines)';
+
+  } catch (err) {
+    Logger.log('Consolidation error: ' + err.toString());
+    return 'Error: ' + err.toString();
+  }
+}
+
+
+/**
+ * Build a UPC -> Department map by scanning CSV files in the folder.
+ * Department name is inferred from the filename (without extension).
+ */
+function buildDepartmentMap(folder, skipFilename) {
+  var files = folder.getFiles();
+  var map = {};
+
+  while (files.hasNext()) {
+    var f = files.next();
+    var name = f.getName();
+    if (!name.endsWith('.csv')) continue;
+    if (name === skipFilename) continue;
+    if (name === 'inventory.csv') continue;
+
+    var deptName = name.replace(/\.csv$/i, '');
+    try {
+      var content = f.getBlob().getDataAsString();
+      var rows = Utilities.parseCsv(content);
+      if (rows.length < 2) continue;
+      var header = rows[0];
+      var upcIndex = findIndexByRegex(header, ['upc','ean','barcode','sku','system id']);
+      if (upcIndex === -1) continue;
+
+      for (var i = 1; i < rows.length; i++) {
+        var r = rows[i];
+        if (r.length <= upcIndex) continue;
+        var upc = String(r[upcIndex]).trim();
+        if (upc) map[upc] = deptName;
+      }
+    } catch (e) {
+      // ignore malformed files
+      continue;
+    }
+  }
+
+  return map;
+}
+
+
+/**
+ * Build consolidated CSV string from report CSV content and deptMap.
+ * Output columns: UPC,Item Name,Department,Remaining,Sales Price
+ */
+function buildConsolidatedCsv(reportContent, deptMap) {
+  var rows = Utilities.parseCsv(reportContent);
+  if (rows.length === 0) return '';
+
+  var header = rows[0];
+  var upcIndex = findIndexByRegex(header, ['upc','ean','barcode','sku','system id']);
+  var itemIndex = findIndexByRegex(header, ['item','description','name']);
+  var remainingIndex = findIndexByRegex(header, ['remaining','qty','quantity','on hand','stock']);
+  var priceIndex = findIndexByRegex(header, ['price','sale price','unit price','saleprice']);
+
+  var out = [];
+  out.push(['UPC','Item Name','Department','Remaining','Sales Price'].join(','));
+
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    var upc = upcIndex >=0 && r.length>upcIndex ? String(r[upcIndex]).trim() : '';
+    var name = itemIndex>=0 && r.length>itemIndex ? String(r[itemIndex]).trim() : '';
+    var remaining = remainingIndex>=0 && r.length>remainingIndex ? String(r[remainingIndex]).trim() : '';
+    var price = priceIndex>=0 && r.length>priceIndex ? String(r[priceIndex]).trim() : '';
+
+    // normalize numbers
+    var remNum = parseInt(remaining) || 0;
+    var priceClean = String(price).replace(/[^0-9.]/g,'') || '';
+
+    var dept = (upc && deptMap[upc]) ? deptMap[upc] : 'Uncategorized';
+
+    // Escape double-quotes in name
+    name = name.replace(/"/g, '""');
+
+    out.push([upc, '"'+name+'"', dept, remNum, priceClean].join(','));
+  }
+
+  return out.join('\n');
+}
+
+
+/**
+ * Find index of first header matching any of the patterns (case-insensitive regex)
+ */
+function findIndexByRegex(headerArr, patterns) {
+  for (var i = 0; i < headerArr.length; i++) {
+    var h = String(headerArr[i]);
+    for (var j = 0; j < patterns.length; j++) {
+      var re = new RegExp(patterns[j], 'i');
+      if (re.test(h)) return i;
+    }
+  }
+  return -1;
+}
+
+
+/**
+ * Periodic runner: call this via an installable time-driven trigger (every 5-15 minutes)
+ * It checks for the reports file and only processes it if it hasn't been processed yet.
+ */
+function periodicProcessReports() {
+  var filename = 'reports_inventory_listings_assets.csv';
+  var folder = DriveApp.getFolderById(FOLDER_ID);
+  var files = folder.getFilesByName(filename);
+  if (!files.hasNext()) return;
+  var file = files.next();
+  var lastUpdated = file.getLastUpdated().toISOString();
+
+  var props = PropertiesService.getScriptProperties();
+  var key = 'LAST_PROCESSED_' + filename;
+  var lastProcessed = props.getProperty(key);
+  if (lastProcessed === lastUpdated) return; // already processed
+
+  // run consolidation
+  var res = handleConsolidateRequest(filename);
+  Logger.log('periodicProcessReports: ' + res);
 }
