@@ -67,6 +67,10 @@ function doGet(e) {
     }
 
     if (action === 'lightspeed-sync') {
+      var syncSecret = PropertiesService.getScriptProperties().getProperty('SYNC_SECRET');
+      if (syncSecret && params.token !== syncSecret) {
+        return createResponse('Forbidden: missing or invalid token.', 403);
+      }
       var result = syncLightspeedInventory();
       return createResponse(result, 200, 'text/plain');
     }
@@ -168,6 +172,22 @@ function getAuthorizationUrl() {
  */
 function printRedirectUri() {
   Logger.log('Your Redirect URI:\n\n  ' + ScriptApp.getService().getUrl());
+}
+
+/**
+ * Set a secret token to protect the ?action=lightspeed-sync endpoint.
+ * Run once: replace the value below with any strong password, run it, then delete the value.
+ * To trigger a manual sync: SCRIPT_URL?action=lightspeed-sync&token=YOUR_SECRET
+ * The scheduled trigger is unaffected — it calls scheduledLightspeedSync() directly.
+ */
+function setSyncSecret() {
+  var secret = 'PASTE_A_STRONG_SECRET_HERE';
+  if (secret === 'PASTE_A_STRONG_SECRET_HERE') {
+    Logger.log('✗ Edit this function and replace the placeholder before running.');
+    return;
+  }
+  PropertiesService.getScriptProperties().setProperty('SYNC_SECRET', secret);
+  Logger.log('✓ Sync secret saved. Manual sync URL:\n  ' + ScriptApp.getService().getUrl() + '?action=lightspeed-sync&token=' + secret);
 }
 
 /**
