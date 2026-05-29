@@ -322,8 +322,10 @@ function syncLightspeedInventory() {
   if (!accountId) throw new Error('Not authorized. Complete Lightspeed OAuth setup first.');
 
   // Fetch all items with category, price, and stock relations loaded
+  // load_relations value must be URL-encoded (brackets/quotes are not valid raw in a URL)
+  var relations = encodeURIComponent('["Category","Prices","ItemShops"]');
   var items = fetchAllPages(
-    accountId + '/Item.json?load_relations=["Category","Prices","ItemShops"]&archived=false',
+    accountId + '/Item.json?load_relations=' + relations + '&archived=false',
     'Item'
   );
 
