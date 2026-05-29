@@ -442,9 +442,14 @@ function refreshAccessToken() {
   }
 }
 
-function lsApiGet(path) {
-  var token    = getAccessToken();
-  var url      = LS_API_BASE + path;
+/**
+ * Make an authenticated GET request to Lightspeed.
+ * Accepts either a full URL (https://...) or a path relative to LS_API_BASE.
+ */
+function lsApiGet(pathOrUrl) {
+  var token = getAccessToken();
+  var url   = pathOrUrl.startsWith('https://') ? pathOrUrl : LS_API_BASE + pathOrUrl;
+
   var response = UrlFetchApp.fetch(url, {
     headers: { 'Authorization': 'Bearer ' + token },
     muteHttpExceptions: true
@@ -467,25 +472,28 @@ function lsApiGet(path) {
 }
 
 /**
- * Paginate through all results for a Lightspeed endpoint.
- * Returns a flat array of all records.
+ * Paginate through all results using cursor-based pagination.
+ * Lightspeed dropped offset support — each response includes @attributes.next
+ * with the URL for the next page. We follow those until there is no next URL.
  */
 function fetchAllPages(basePath, recordKey) {
   var results = [];
-  var offset  = 0;
-  var limit   = 100;
   var sep     = basePath.includes('?') ? '&' : '?';
+  var nextUrl = LS_API_BASE + basePath + sep + 'limit=100';
 
-  while (true) {
-    var data  = lsApiGet(basePath + sep + 'limit=' + limit + '&offset=' + offset);
+  while (nextUrl) {
+    var data  = lsApiGet(nextUrl);
     var batch = data[recordKey];
     if (!batch) break;
     if (!Array.isArray(batch)) batch = [batch];
     results = results.concat(batch);
-    if (batch.length < limit) break;
-    offset += limit;
-    // Brief pause to stay within rate limits on large catalogs
-    if (offset % 500 === 0) Utilities.sleep(1000);
+
+    // @attributes.next holds the full URL for the next page (null/absent when done)
+    var attrs = data['@attributes'] || {};
+    nextUrl   = attrs.next || null;
+
+    // Brief pause every 500 records to respect rate limits
+    if (nextUrl && results.length % 500 === 0) Utilities.sleep(1000);
   }
 
   return results;
