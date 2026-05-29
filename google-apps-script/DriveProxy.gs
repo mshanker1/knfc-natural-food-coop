@@ -33,8 +33,8 @@
 const FOLDER_ID = '186FBV_BDcq3iSI_PVyrmWuLSGMTlzI8X';
 
 // Lightspeed API endpoints (do not change)
-const LS_AUTH_URL  = 'https://cloud.lightspeedapp.com/oauth/authorize.php';
-const LS_TOKEN_URL = 'https://cloud.lightspeedapp.com/oauth/access_token.php';
+const LS_AUTH_URL  = 'https://cloud.lightspeedapp.com/auth/oauth/authorize';
+const LS_TOKEN_URL = 'https://cloud.lightspeedapp.com/auth/oauth/token';
 const LS_API_BASE  = 'https://api.lightspeedapp.com/API/V3/Account/';
 
 // ============================================
@@ -128,6 +128,11 @@ function setLightspeedCredentials() {
 /**
  * STEP 2: Run this, then visit the URL printed in the Logs panel.
  * After you click Allow, Lightspeed redirects back here and saves your tokens automatically.
+ *
+ * IMPORTANT: Before running this, make sure your Apps Script deployment URL is registered
+ * as the Redirect URI in your Lightspeed app at https://cloud.lightspeedapp.com/oauth/register.php
+ * The URL looks like: https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
+ * Run printRedirectUri() to get your exact URL.
  */
 function getAuthorizationUrl() {
   var props    = PropertiesService.getScriptProperties();
@@ -136,14 +141,50 @@ function getAuthorizationUrl() {
     Logger.log('✗ No client ID found. Run setLightspeedCredentials() first.');
     return;
   }
+
+  // Generate PKCE code_verifier and code_challenge (required by Lightspeed)
+  var pkce        = generatePKCE();
   var redirectUri = ScriptApp.getService().getUrl();
+
+  // Save verifier so handleOAuthCallback can use it
+  props.setProperty('LS_CODE_VERIFIER', pkce.verifier);
+
   var url = LS_AUTH_URL
     + '?response_type=code'
-    + '&client_id=' + encodeURIComponent(clientId)
+    + '&client_id='             + encodeURIComponent(clientId)
     + '&scope=employee:all'
-    + '&redirect_uri=' + encodeURIComponent(redirectUri);
-  Logger.log('✓ Authorization URL:\n\n' + url + '\n\nVisit this URL, click Allow, then run testLightspeedSync().');
+    + '&redirect_uri='          + encodeURIComponent(redirectUri)
+    + '&code_challenge='        + encodeURIComponent(pkce.challenge)
+    + '&code_challenge_method=S256';
+
+  Logger.log('✓ Your redirect URI (register this in Lightspeed if not done yet):\n  ' + redirectUri);
+  Logger.log('\n✓ Authorization URL — visit this in your browser:\n\n  ' + url + '\n');
   return url;
+}
+
+/**
+ * Helper: print your Apps Script deployment URL.
+ * Copy this and paste it as the Redirect URI in your Lightspeed app settings.
+ */
+function printRedirectUri() {
+  Logger.log('Your Redirect URI:\n\n  ' + ScriptApp.getService().getUrl());
+}
+
+/**
+ * Generate a PKCE code_verifier and code_challenge pair.
+ * Lightspeed requires PKCE (S256 method) for the authorization code flow.
+ */
+function generatePKCE() {
+  // 64-byte random verifier, base64url encoded, no padding
+  var bytes    = [];
+  for (var i = 0; i < 64; i++) bytes.push(Math.floor(Math.random() * 256));
+  var verifier = Utilities.base64EncodeWebSafe(bytes).replace(/=+$/, '');
+
+  // SHA-256 hash of the verifier, base64url encoded, no padding
+  var digest    = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, verifier, Utilities.Charset.UTF_8);
+  var challenge = Utilities.base64EncodeWebSafe(digest).replace(/=+$/, '');
+
+  return { verifier: verifier, challenge: challenge };
 }
 
 /**
@@ -157,6 +198,8 @@ function handleOAuthCallback(code) {
     var clientSecret= props.getProperty('LS_CLIENT_SECRET');
     var redirectUri = ScriptApp.getService().getUrl();
 
+    var codeVerifier = props.getProperty('LS_CODE_VERIFIER') || '';
+
     var response = UrlFetchApp.fetch(LS_TOKEN_URL, {
       method: 'post',
       payload: {
@@ -164,7 +207,8 @@ function handleOAuthCallback(code) {
         client_secret: clientSecret,
         code:          code,
         grant_type:    'authorization_code',
-        redirect_uri:  redirectUri
+        redirect_uri:  redirectUri,
+        code_verifier: codeVerifier
       },
       muteHttpExceptions: true
     });
