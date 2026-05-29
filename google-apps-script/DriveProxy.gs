@@ -223,13 +223,17 @@ function handleOAuthCallback(code) {
 
     props.setProperty('LS_ACCESS_TOKEN',  data.access_token);
     props.setProperty('LS_REFRESH_TOKEN', data.refresh_token);
-    props.setProperty('LS_ACCOUNT_ID',    String(data.accountID));
     props.setProperty('LS_TOKEN_EXPIRES', String(Date.now() + data.expires_in * 1000));
 
-    Logger.log('✓ Tokens saved. Account ID: ' + data.accountID);
+    // The new Lightspeed API doesn't return accountID in the token response.
+    // Fetch it directly from the Account endpoint instead.
+    var accountId = data.accountID || fetchAccountIdFromToken(data.access_token);
+    props.setProperty('LS_ACCOUNT_ID', String(accountId));
+
+    Logger.log('✓ Tokens saved. Account ID: ' + accountId);
 
     return ContentService.createTextOutput(
-      '✓ Lightspeed connected successfully! Account ID: ' + data.accountID +
+      '✓ Lightspeed connected successfully! Account ID: ' + accountId +
       '\n\nYou can close this tab. Run testLightspeedSync() in the Apps Script editor to verify.'
     ).setMimeType(ContentService.MimeType.TEXT);
 
@@ -246,11 +250,16 @@ function handleOAuthCallback(code) {
 function testLightspeedSync() {
   Logger.log('Testing Lightspeed connection...');
   try {
-    var accountId = PropertiesService.getScriptProperties().getProperty('LS_ACCOUNT_ID');
-    if (!accountId) {
-      Logger.log('✗ No account ID. Complete the OAuth setup first.');
-      return;
+    var props     = PropertiesService.getScriptProperties();
+    var accountId = props.getProperty('LS_ACCOUNT_ID');
+
+    // Auto-fix: the old API returned accountID in the token response; the new one doesn't.
+    // If it was saved as 'undefined' or is missing, fetch it now.
+    if (!accountId || accountId === 'undefined') {
+      Logger.log('Account ID missing — fetching from Lightspeed API...');
+      accountId = fetchAndSaveAccountId();
     }
+
     // Fetch a single item to verify connectivity
     var data = lsApiGet(accountId + '/Item.json?limit=1');
     if (data.Item) {
@@ -263,6 +272,39 @@ function testLightspeedSync() {
   } catch (err) {
     Logger.log('✗ Test failed: ' + err.toString());
   }
+}
+
+/**
+ * Fetch the Lightspeed account ID using the current access token and save it.
+ * Run this manually if the account ID is missing or was saved incorrectly.
+ */
+function fetchAndSaveAccountId() {
+  var accountId = fetchAccountIdFromToken(
+    PropertiesService.getScriptProperties().getProperty('LS_ACCESS_TOKEN')
+  );
+  PropertiesService.getScriptProperties().setProperty('LS_ACCOUNT_ID', String(accountId));
+  Logger.log('✓ Account ID saved: ' + accountId);
+  return String(accountId);
+}
+
+/**
+ * Call GET /API/V3/Account.json to discover the account ID for this token.
+ */
+function fetchAccountIdFromToken(accessToken) {
+  var response = UrlFetchApp.fetch('https://api.lightspeedapp.com/API/V3/Account.json', {
+    headers: { 'Authorization': 'Bearer ' + accessToken },
+    muteHttpExceptions: true
+  });
+
+  if (response.getResponseCode() !== 200) {
+    throw new Error('Could not fetch account ID: ' + response.getContentText().substring(0, 200));
+  }
+
+  var data    = JSON.parse(response.getContentText());
+  var account = data.Account;
+  if (!account) throw new Error('No Account in response: ' + JSON.stringify(data).substring(0, 200));
+  if (Array.isArray(account)) account = account[0];
+  return account.accountID;
 }
 
 
