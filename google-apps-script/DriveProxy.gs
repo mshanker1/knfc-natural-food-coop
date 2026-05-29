@@ -328,9 +328,6 @@ function syncLightspeedInventory() {
     'Item'
   );
 
-  // Fetch default prices separately and build itemID -> price map
-  var priceMap = fetchDefaultPrices(accountId);
-
   // Build CSV rows
   var lines = ['UPC,Item Name,Department,Remaining,Sales Price'];
 
@@ -347,7 +344,14 @@ function syncLightspeedInventory() {
       shops.forEach(function(s) { qty += parseInt(s.qoh || 0); });
     }
 
-    var price = priceMap[item.itemID] || '';
+    // Price is embedded in the Item response under Prices.ItemPrice
+    var price = '';
+    if (item.Prices && item.Prices.ItemPrice) {
+      var prices = item.Prices.ItemPrice;
+      if (!Array.isArray(prices)) prices = [prices];
+      var def = prices.filter(function(p) { return p.useType === 'Default'; })[0] || prices[0];
+      if (def && def.amount) price = parseFloat(def.amount).toFixed(2);
+    }
 
     lines.push([upc, '"' + name + '"', dept, qty, price].join(','));
   });
@@ -372,17 +376,14 @@ function syncLightspeedInventory() {
 }
 
 /**
- * Fetch all default prices from ItemPrice endpoint and return a map of itemID -> price string.
+ * Debug helper: logs the raw JSON of the first item so you can see exactly
+ * what fields Lightspeed returns. Run this if prices or other fields are missing.
  */
-function fetchDefaultPrices(accountId) {
-  var priceMap = {};
-  var prices   = fetchAllPages(accountId + '/ItemPrice.json?useType=Default', 'ItemPrice');
-  prices.forEach(function(p) {
-    if (p.itemID && p.amount) {
-      priceMap[String(p.itemID)] = parseFloat(p.amount).toFixed(2);
-    }
-  });
-  return priceMap;
+function debugItem() {
+  var accountId = PropertiesService.getScriptProperties().getProperty('LS_ACCOUNT_ID');
+  var relations = encodeURIComponent('["Category","ItemShops"]');
+  var data      = lsApiGet(accountId + '/Item.json?load_relations=' + relations + '&limit=1');
+  Logger.log(JSON.stringify(data, null, 2));
 }
 
 /**
