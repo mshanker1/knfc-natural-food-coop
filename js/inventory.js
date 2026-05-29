@@ -321,7 +321,7 @@ function renderPage() {
 
     if (!currentFilteredProducts || currentFilteredProducts.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="5" style="text-align: center; padding: 2rem;">No products found matching your search.</td>';
+        row.innerHTML = '<td colspan="4" style="text-align: center; padding: 2rem;">No products found matching your search.</td>';
         tableBodyEl.appendChild(row);
         renderPaginationControls();
         lastUpdatedEl.textContent = `Showing 0 of ${inventoryData.length} products`;
@@ -339,14 +339,12 @@ function renderPage() {
     pageItems.forEach(product => {
         const row = document.createElement('tr');
 
-        const upc = product.upc || product.UPC || product['UPC'] || '';
         const name = product.name || product['Item Name'] || '';
         const department = product.department || product.Department || product['Department'] || '';
         const quantity = product.quantity || parseInt(product.Remaining || product['Remaining'] || 0);
         const price = product.price || parsePrice(product['Sales Price'] || product['Sales Price'] || '0');
 
         row.innerHTML = `
-            <td>${escapeHtml(upc)}</td>
             <td><strong>${escapeHtml(name)}</strong></td>
             <td>${escapeHtml(department)}</td>
             <td>${quantity}</td>
@@ -430,7 +428,11 @@ function filterProducts() {
     const selectedCategory = categoryFilter.value;
     const selectedStock = stockFilter.value;
 
-    let filtered = inventoryData;
+    // Always hide items with no stock
+    let filtered = inventoryData.filter(product => {
+        const qty = product.quantity || parseInt(product.Remaining || product['Remaining'] || 0);
+        return qty > 0;
+    });
 
     // Filter by search term
     if (searchTerm) {
