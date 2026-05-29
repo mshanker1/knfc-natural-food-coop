@@ -307,8 +307,11 @@ function populateCategories() {
  * Render inventory table
  */
 function renderInventory(products) {
-    // Store filtered set and reset to first page
-    currentFilteredProducts = products || [];
+    // Always exclude zero-stock items regardless of how this is called
+    currentFilteredProducts = (products || []).filter(product => {
+        const qty = product.quantity || parseInt(product.Remaining || product['Remaining'] || 0);
+        return qty > 0;
+    });
     currentPage = 1;
     renderPage();
 }
@@ -428,11 +431,7 @@ function filterProducts() {
     const selectedCategory = categoryFilter.value;
     const selectedStock = stockFilter.value;
 
-    // Always hide items with no stock
-    let filtered = inventoryData.filter(product => {
-        const qty = product.quantity || parseInt(product.Remaining || product['Remaining'] || 0);
-        return qty > 0;
-    });
+    let filtered = inventoryData;
 
     // Filter by search term
     if (searchTerm) {
