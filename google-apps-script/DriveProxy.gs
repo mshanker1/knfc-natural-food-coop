@@ -321,13 +321,15 @@ function syncLightspeedInventory() {
   var accountId = props.getProperty('LS_ACCOUNT_ID');
   if (!accountId) throw new Error('Not authorized. Complete Lightspeed OAuth setup first.');
 
-  // Fetch all items with category, price, and stock relations loaded
-  // load_relations value must be URL-encoded (brackets/quotes are not valid raw in a URL)
-  var relations = encodeURIComponent('["Category","Prices","ItemShops"]');
+  // Fetch items with category and stock relations (Prices is not a valid relation — fetched separately)
+  var relations = encodeURIComponent('["Category","ItemShops"]');
   var items = fetchAllPages(
     accountId + '/Item.json?load_relations=' + relations + '&archived=false',
     'Item'
   );
+
+  // Fetch default prices separately and build itemID -> price map
+  var priceMap = fetchDefaultPrices(accountId);
 
   // Build CSV rows
   var lines = ['UPC,Item Name,Department,Remaining,Sales Price'];
@@ -345,14 +347,7 @@ function syncLightspeedInventory() {
       shops.forEach(function(s) { qty += parseInt(s.qoh || 0); });
     }
 
-    // Find the default selling price
-    var price = '';
-    if (item.Prices && item.Prices.ItemPrice) {
-      var prices = item.Prices.ItemPrice;
-      if (!Array.isArray(prices)) prices = [prices];
-      var def = prices.filter(function(p) { return p.useType === 'Default'; })[0] || prices[0];
-      if (def && def.amount) price = parseFloat(def.amount).toFixed(2);
-    }
+    var price = priceMap[item.itemID] || '';
 
     lines.push([upc, '"' + name + '"', dept, qty, price].join(','));
   });
@@ -374,6 +369,20 @@ function syncLightspeedInventory() {
   var msg = 'OK: synced ' + (lines.length - 1) + ' items from Lightspeed at ' + new Date().toLocaleTimeString();
   Logger.log('✓ ' + msg);
   return msg;
+}
+
+/**
+ * Fetch all default prices from ItemPrice endpoint and return a map of itemID -> price string.
+ */
+function fetchDefaultPrices(accountId) {
+  var priceMap = {};
+  var prices   = fetchAllPages(accountId + '/ItemPrice.json?useType=Default', 'ItemPrice');
+  prices.forEach(function(p) {
+    if (p.itemID && p.amount) {
+      priceMap[String(p.itemID)] = parseFloat(p.amount).toFixed(2);
+    }
+  });
+  return priceMap;
 }
 
 /**
