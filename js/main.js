@@ -13,7 +13,7 @@
 
 const STORE_INFO = {
     phone: '(330) 673-2878',
-    email: 'hello@kentnaturalfoods.coop', // TODO: update with real address
+    email: 'knfcoop@gmail.com',
     address: {
         street: '151 East Main St.',
         city: 'Kent',
