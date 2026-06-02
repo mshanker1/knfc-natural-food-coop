@@ -345,7 +345,7 @@ function syncLightspeedInventory() {
   // Without this filter the API returns all item types, double-counting matrix variants.
   var relations = encodeURIComponent('["Category","ItemShops"]');
   var items = fetchAllPages(
-    accountId + '/Item.json?load_relations=' + relations + '&archived=false&itemType=Default',
+    accountId + '/Item.json?load_relations=' + relations + '&archived=false&itemType=default',
     'Item'
   );
 
