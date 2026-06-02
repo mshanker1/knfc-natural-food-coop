@@ -378,19 +378,22 @@ function syncLightspeedInventory() {
 
   var csv = lines.join('\n');
 
-  // Write (or overwrite) inventory.csv in the Drive folder
+  // Delete ALL existing inventory.csv files and recreate from scratch.
+  // Using setContent() can leave stale data in some Drive configurations,
+  // causing duplicate rows. Delete-and-recreate guarantees a clean file.
   var folder   = DriveApp.getFolderById(FOLDER_ID);
   var existing = folder.getFilesByName('inventory.csv');
-  if (existing.hasNext()) {
-    existing.next().setContent(csv);
-  } else {
-    folder.createFile('inventory.csv', csv, MimeType.CSV);
+  while (existing.hasNext()) {
+    existing.next().setTrashed(true);
   }
+  folder.createFile('inventory.csv', csv, MimeType.CSV);
 
-  // Record last sync time
-  props.setProperty('LS_LAST_SYNC', new Date().toISOString());
+  // Record last sync time and item count for diagnostics
+  var itemCount = lines.length - 1;
+  props.setProperty('LS_LAST_SYNC',  new Date().toISOString());
+  props.setProperty('LS_LAST_COUNT', String(itemCount));
 
-  var msg = 'OK: synced ' + (lines.length - 1) + ' items from Lightspeed at ' + new Date().toLocaleTimeString();
+  var msg = 'OK: synced ' + itemCount + ' items from Lightspeed at ' + new Date().toLocaleTimeString();
   Logger.log('✓ ' + msg);
   return msg;
 }
