@@ -357,12 +357,14 @@ function syncLightspeedInventory() {
     var name = (item.description || '').replace(/"/g, '""');
     var dept = (item.Category && item.Category.name) ? item.Category.name : 'Uncategorized';
 
-    // Sum quantity on hand across all shops (most co-ops have one shop)
+    // Use only the FIRST shop's quantity to avoid double-counting.
+    // Lightspeed accounts with a secondary shop (e.g. webstore) return multiple
+    // ItemShop records; summing them doubles every quantity.
     var qty = 0;
     if (item.ItemShops && item.ItemShops.ItemShop) {
       var shops = item.ItemShops.ItemShop;
       if (!Array.isArray(shops)) shops = [shops];
-      shops.forEach(function(s) { qty += parseInt(s.qoh || 0); });
+      qty = parseInt(shops[0].qoh || 0);
     }
 
     // Price is embedded in the Item response under Prices.ItemPrice
