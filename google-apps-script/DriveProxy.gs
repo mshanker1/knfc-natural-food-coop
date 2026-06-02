@@ -341,10 +341,11 @@ function syncLightspeedInventory() {
   var accountId = props.getProperty('LS_ACCOUNT_ID');
   if (!accountId) throw new Error('Not authorized. Complete Lightspeed OAuth setup first.');
 
-  // Fetch items with category and stock relations (Prices is not a valid relation — fetched separately)
+  // Fetch only Default-type items (excludes matrix parents, gift cards, service/non-inventory items).
+  // Without this filter the API returns all item types, double-counting matrix variants.
   var relations = encodeURIComponent('["Category","ItemShops"]');
   var items = fetchAllPages(
-    accountId + '/Item.json?load_relations=' + relations + '&archived=false',
+    accountId + '/Item.json?load_relations=' + relations + '&archived=false&itemType=Default',
     'Item'
   );
 
