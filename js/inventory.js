@@ -96,89 +96,192 @@ const LOW_STOCK_THRESHOLD = 5;  // Show "Low Stock" when quantity is at or below
 // DEPARTMENT MAPPING
 // Maps raw POS department names → broader
 // display categories shown in the filter.
-// Add or edit entries here when the POS uses
-// a name that should roll up into a category.
+// Built from actual inventory.csv department
+// names — add new POS names here as needed.
 // ============================================
 const DEPARTMENT_MAP = {
-    // Bulk & Herbs
-    'Bulk_HB':       'Bulk & Herbs',
-    'Bulk HB':       'Bulk & Herbs',
-    'Bulk':          'Bulk & Herbs',
-    'Herb':          'Bulk & Herbs',
-    'Herbs':         'Bulk & Herbs',
-    'Bulk Herbs':    'Bulk & Herbs',
+    // ── TEA ──────────────────────────────────
+    'Tea boxed':             'Tea',
+    'Boxed Tea':             'Tea',   // CBD tea products
 
-    // Grocery / Packaged Dry
-    'Packaged_Dry':  'Grocery',
-    'Packaged Dry':  'Grocery',
-    'Grocery':       'Grocery',
-    'Dry Goods':     'Grocery',
-    'Canned':        'Grocery',
-    'Condiments':    'Grocery',
-    'Baking':        'Grocery',
-    'Bakery':        'Grocery',
-    'Bread':         'Grocery',
-    'Pasta':         'Grocery',
-    'Grains':        'Grocery',
-    'Cereal':        'Grocery',
-    'Spreads':       'Grocery',
+    // ── COFFEE ───────────────────────────────
+    'Alt coffee':            'Coffee',
+    'Pkg coffee':            'Coffee',
+    'Rtd coffee':            'Coffee',
+    'Bulk coffee':           'Coffee',
 
-    // Snacks
-    'Packaged_HB':   'Snacks',
-    'Packaged HB':   'Snacks',
-    'Snack':         'Snacks',
-    'Snacks':        'Snacks',
-    'Jerky':         'Snacks',
-    'Chips':         'Snacks',
-    'Crackers':      'Snacks',
-    'Cookies':       'Snacks',
-    'Candy':         'Snacks',
-    'Chocolate':     'Snacks',
+    // ── JUICE & WATER ────────────────────────
+    'Fruit juice':           'Juice & Water',
+    'Veggie juice':          'Juice & Water',
+    'Coconut water':         'Juice & Water',
+    'Bottled water':         'Juice & Water',
+    'single serv juice':     'Juice & Water',
+    'Aloe':                  'Juice & Water',
 
-    // Beverages
-    'Beverage':      'Beverages',
-    'Beverages':     'Beverages',
-    'Tea':           'Beverages',
-    'Coffee':        'Beverages',
-    'Juice':         'Beverages',
+    // ── BEVERAGES ────────────────────────────
+    'Beverages':             'Beverages',
+    'Beverages ':            'Beverages',  // POS trailing-space variant
+    'Milk':                  'Beverages',  // dairy & plant-based milks
+    'Soda':                  'Beverages',
+    'Kombucha':              'Beverages',
+    'Iced tea':              'Beverages',
+    'Energy':                'Beverages',
+    'Cbd':                   'Beverages',  // CBD sparkling waters
 
-    // Dairy & Refrigerated
-    'Milk':          'Dairy & Refrigerated',
-    'Dairy':         'Dairy & Refrigerated',
-    'Cheese':        'Dairy & Refrigerated',
-    'Eggs':          'Dairy & Refrigerated',
-    'Refrigerated':  'Dairy & Refrigerated',
-    'Yogurt':        'Dairy & Refrigerated',
+    // ── DAIRY & EGGS ─────────────────────────
+    'Dairy':                 'Dairy & Eggs',
+    'Cheese':                'Dairy & Eggs',
+    'Yogurt':                'Dairy & Eggs',
+    'Yogurt/kefir':          'Dairy & Eggs',
+    'Butter':                'Dairy & Eggs',
+    'Eggs':                  'Dairy & Eggs',
 
-    // Produce
-    'Produce':       'Produce',
-    'Fruits':        'Produce',
-    'Vegetables':    'Produce',
+    // ── GROCERY & PANTRY ─────────────────────
+    'Pantry':                'Grocery & Pantry',
+    'Condiments':            'Grocery & Pantry',
+    'Cooking oil':           'Grocery & Pantry',
+    'Sweeteners':            'Grocery & Pantry',
+    'Beans':                 'Grocery & Pantry',
+    'Broth':                 'Grocery & Pantry',
+    'Soup':                  'Grocery & Pantry',
+    'Soup can':              'Grocery & Pantry',
+    'Soup dried':            'Grocery & Pantry',
+    'Sauces':                'Grocery & Pantry',
+    'Gravy':                 'Grocery & Pantry',
+    'Seasoning':             'Grocery & Pantry',
+    'Canned':                'Grocery & Pantry',
+    'Canned ':               'Grocery & Pantry',  // POS trailing-space variant
+    'Dressing':              'Grocery & Pantry',
+    'Salsa':                 'Grocery & Pantry',
+    'Fruit Spread':          'Grocery & Pantry',
+    'Pickles':               'Grocery & Pantry',
+    'Mayo':                  'Grocery & Pantry',
+    'Cultured':              'Grocery & Pantry',
+    'Refrigerated':          'Grocery & Pantry',
+    'Seaweed':               'Grocery & Pantry',
+    'Savory Spread':         'Grocery & Pantry',
+    'Fruit':                 'Grocery & Pantry',
+    'Herbs/spices':          'Grocery & Pantry',
+    'Dried':                 'Grocery & Pantry',  // dried culinary mushrooms etc.
 
-    // Frozen
-    'Frozen':        'Frozen',
+    // ── BREAD, GRAINS & PASTA ────────────────
+    'Bread':                 'Bread, Grains & Pasta',
+    'Bakery':                'Bread, Grains & Pasta',
+    'Bakery ':               'Bread, Grains & Pasta',  // POS trailing-space variant
+    'Tortillas':             'Bread, Grains & Pasta',
+    'Pasta':                 'Bread, Grains & Pasta',
+    'Flour/mixes':           'Bread, Grains & Pasta',
+    'Cereal':                'Bread, Grains & Pasta',
+    'Granola':               'Bread, Grains & Pasta',
+    'Crackers':              'Bread, Grains & Pasta',
+    'Gluten Free':           'Bread, Grains & Pasta',
+    'Grain products':        'Bread, Grains & Pasta',
 
-    // Vitamins & Supplements
-    'Vitamins':      'Vitamins & Supplements',
-    'Vitamin':       'Vitamins & Supplements',
-    'Supplements':   'Vitamins & Supplements',
-    'Supplement':    'Vitamins & Supplements',
+    // ── SNACKS & SWEETS ──────────────────────
+    'Salty Snacks':          'Snacks & Sweets',
+    'Candy':                 'Snacks & Sweets',
+    'Chocolate':             'Snacks & Sweets',
+    'Cookies':               'Snacks & Sweets',
+    'Snack Bars':            'Snacks & Sweets',
+    'Baked treats':          'Snacks & Sweets',
+    'Nut butter':            'Snacks & Sweets',
+    'Nuts/seeds':            'Snacks & Sweets',
+    'Dried fruit':           'Snacks & Sweets',
+    'Gum':                   'Snacks & Sweets',
 
-    // Health & Body Care
-    'Body Care':     'Health & Body Care',
-    'Body care':     'Health & Body Care',
-    'Soaps':         'Health & Body Care',
-    'Soap':          'Health & Body Care',
-    'Personal Care': 'Health & Body Care',
-    'Beauty':        'Health & Body Care',
+    // ── FROZEN FOODS ─────────────────────────
+    'Frozen':                'Frozen Foods',
+    'Frozen fruit':          'Frozen Foods',
+    'Ice cream':             'Frozen Foods',
+    'Non-Dairy':             'Frozen Foods',
+    'Non-Dairy ':            'Frozen Foods',  // POS trailing-space variant
+    'Dinner':                'Frozen Foods',
+    'Pizza Non-Dairy Wheat': 'Frozen Foods',
+    'Pizza Dairy & Wheat':   'Frozen Foods',
+    'Treats':                'Frozen Foods',
 
-    // Household
-    'Household':     'Household',
-    'Cleaning':      'Household',
+    // ── MEAT, FISH & PROTEIN ─────────────────
+    // Jerky + Meat Substitute both map here so
+    // all jerky (animal & vegan) shows together.
+    'Meat':                  'Meat, Fish & Protein',
+    'Local meat':            'Meat, Fish & Protein',
+    'Fish':                  'Meat, Fish & Protein',
+    'Meat Substitute':       'Meat, Fish & Protein',
+    'Burgers':               'Meat, Fish & Protein',
+    'Tofu':                  'Meat, Fish & Protein',
+    'Jerky':                 'Meat, Fish & Protein',
+
+    // ── SUPPLEMENTS & VITAMINS ───────────────
+    'Supplements':           'Supplements & Vitamins',
+    'Supplement':            'Supplements & Vitamins',
+    'Minerals':              'Supplements & Vitamins',
+    'Vitamin D':             'Supplements & Vitamins',
+    'Vitamin B':             'Supplements & Vitamins',
+    'Vitamin C':             'Supplements & Vitamins',
+    'Multi':                 'Supplements & Vitamins',
+    'Homeopathic':           'Supplements & Vitamins',
+    'Herbal capsules':       'Supplements & Vitamins',
+    'Herbal tinctures':      'Supplements & Vitamins',
+    'Probiotic enzymes':     'Supplements & Vitamins',
+    'Protein drinks':        'Supplements & Vitamins',
+    'Protein powder':        'Supplements & Vitamins',
+    'Cold & flu':            'Supplements & Vitamins',
+    'Kratom':                'Supplements & Vitamins',
+    'Topical':               'Supplements & Vitamins',
+    'Lotion/Balm/Cream':     'Supplements & Vitamins',
+    'mushroom':              'Supplements & Vitamins',  // mushroom supplements (POS lowercase)
+    'Children':              'Supplements & Vitamins',
+
+    // ── PERSONAL CARE & BEAUTY ───────────────
+    'Personal Care':         'Personal Care & Beauty',
+    'Skin care':             'Personal Care & Beauty',
+    'Hair care':             'Personal Care & Beauty',
+    'Oral Care':             'Personal Care & Beauty',
+    'Bar Soap/Hand':         'Personal Care & Beauty',
+    'Cosmetics':             'Personal Care & Beauty',
+    'Deodorant':             'Personal Care & Beauty',
+    'Shaving':               'Personal Care & Beauty',
+    'Bathroom':              'Personal Care & Beauty',
+    'Feminine':              'Personal Care & Beauty',
+    'Baby skin':             'Personal Care & Beauty',
+    'Baby food':             'Personal Care & Beauty',
+    'Baby':                  'Personal Care & Beauty',
+
+    // ── ESSENTIAL OILS & AROMATHERAPY ────────
+    'Essential oil':         'Essential Oils & Aromatherapy',
+    'Incense/aroma':         'Essential Oils & Aromatherapy',
+
+    // ── HOME, KITCHEN & GARDEN ───────────────
+    'Home goods':            'Home, Kitchen & Garden',
+    'Kitchen':               'Home, Kitchen & Garden',
+    'Kitchen gadgets':       'Home, Kitchen & Garden',
+    'Laundry':               'Home, Kitchen & Garden',
+    'Cleaning':              'Home, Kitchen & Garden',
+    'Disposable':            'Home, Kitchen & Garden',
+    'Disposable ':           'Home, Kitchen & Garden',  // POS trailing-space variant
+    'Pest control':          'Home, Kitchen & Garden',
+    'Empty storage containers': 'Home, Kitchen & Garden',
+    'Garden seeds':          'Home, Kitchen & Garden',
+    'Totes':                 'Home, Kitchen & Garden',
+    'Apparel':               'Home, Kitchen & Garden',
+    'Hosiery':               'Home, Kitchen & Garden',
+    'Jewelry':               'Home, Kitchen & Garden',
+    'T-shirt':               'Home, Kitchen & Garden',
+    'Toys':                  'Home, Kitchen & Garden',
+    'Travel lunch':          'Home, Kitchen & Garden',
+    'Pet Food':              'Home, Kitchen & Garden',
+    'Pet Care':              'Home, Kitchen & Garden',
+    'Pet':                   'Home, Kitchen & Garden',
+
+    // ── FRESH PRODUCE ────────────────────────
+    'Fresh':                 'Fresh Produce',
+    'Fresh fruit':           'Fresh Produce',
 };
 
 function mapDepartment(rawDept) {
-    return DEPARTMENT_MAP[rawDept] || rawDept;
+    // Trim whitespace first to handle POS trailing-space variants
+    const trimmed = (rawDept || '').trim();
+    return DEPARTMENT_MAP[trimmed] || DEPARTMENT_MAP[rawDept] || trimmed;
 }
 
 // Store for inventory data
