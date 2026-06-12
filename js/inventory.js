@@ -92,6 +92,95 @@ const LOW_STOCK_THRESHOLD = 5;  // Show "Low Stock" when quantity is at or below
 // END CONFIGURATION
 // ============================================
 
+// ============================================
+// DEPARTMENT MAPPING
+// Maps raw POS department names → broader
+// display categories shown in the filter.
+// Add or edit entries here when the POS uses
+// a name that should roll up into a category.
+// ============================================
+const DEPARTMENT_MAP = {
+    // Bulk & Herbs
+    'Bulk_HB':       'Bulk & Herbs',
+    'Bulk HB':       'Bulk & Herbs',
+    'Bulk':          'Bulk & Herbs',
+    'Herb':          'Bulk & Herbs',
+    'Herbs':         'Bulk & Herbs',
+    'Bulk Herbs':    'Bulk & Herbs',
+
+    // Grocery / Packaged Dry
+    'Packaged_Dry':  'Grocery',
+    'Packaged Dry':  'Grocery',
+    'Grocery':       'Grocery',
+    'Dry Goods':     'Grocery',
+    'Canned':        'Grocery',
+    'Condiments':    'Grocery',
+    'Baking':        'Grocery',
+    'Bakery':        'Grocery',
+    'Bread':         'Grocery',
+    'Pasta':         'Grocery',
+    'Grains':        'Grocery',
+    'Cereal':        'Grocery',
+    'Spreads':       'Grocery',
+
+    // Snacks
+    'Packaged_HB':   'Snacks',
+    'Packaged HB':   'Snacks',
+    'Snack':         'Snacks',
+    'Snacks':        'Snacks',
+    'Jerky':         'Snacks',
+    'Chips':         'Snacks',
+    'Crackers':      'Snacks',
+    'Cookies':       'Snacks',
+    'Candy':         'Snacks',
+    'Chocolate':     'Snacks',
+
+    // Beverages
+    'Beverage':      'Beverages',
+    'Beverages':     'Beverages',
+    'Tea':           'Beverages',
+    'Coffee':        'Beverages',
+    'Juice':         'Beverages',
+
+    // Dairy & Refrigerated
+    'Milk':          'Dairy & Refrigerated',
+    'Dairy':         'Dairy & Refrigerated',
+    'Cheese':        'Dairy & Refrigerated',
+    'Eggs':          'Dairy & Refrigerated',
+    'Refrigerated':  'Dairy & Refrigerated',
+    'Yogurt':        'Dairy & Refrigerated',
+
+    // Produce
+    'Produce':       'Produce',
+    'Fruits':        'Produce',
+    'Vegetables':    'Produce',
+
+    // Frozen
+    'Frozen':        'Frozen',
+
+    // Vitamins & Supplements
+    'Vitamins':      'Vitamins & Supplements',
+    'Vitamin':       'Vitamins & Supplements',
+    'Supplements':   'Vitamins & Supplements',
+    'Supplement':    'Vitamins & Supplements',
+
+    // Health & Body Care
+    'Body Care':     'Health & Body Care',
+    'Body care':     'Health & Body Care',
+    'Soaps':         'Health & Body Care',
+    'Soap':          'Health & Body Care',
+    'Personal Care': 'Health & Body Care',
+    'Beauty':        'Health & Body Care',
+
+    // Household
+    'Household':     'Household',
+    'Cleaning':      'Household',
+};
+
+function mapDepartment(rawDept) {
+    return DEPARTMENT_MAP[rawDept] || rawDept;
+}
+
 // Store for inventory data
 let inventoryData = [];
 // Pagination/config
@@ -289,13 +378,14 @@ function getStockStatus(quantity) {
  * Populate department filter dropdown
  */
 function populateCategories() {
-    // Handle both property name formats
-    const departments = [...new Set(inventoryData.map(p =>
-        p.department || p.Department || p['Department'] || 'Uncategorized'
-    ))].sort();
+    // Map raw department names to broader display categories, then deduplicate
+    const displayDepts = [...new Set(inventoryData.map(p => {
+        const raw = p.department || p.Department || p['Department'] || 'Uncategorized';
+        return mapDepartment(raw);
+    }))].sort();
 
     categoryFilter.innerHTML = '<option value="">All Departments</option>';
-    departments.forEach(dept => {
+    displayDepts.forEach(dept => {
         const option = document.createElement('option');
         option.value = dept;
         option.textContent = dept;
@@ -433,21 +523,22 @@ function filterProducts() {
 
     let filtered = inventoryData;
 
-    // Filter by search term
+    // Filter by search term (search display name, UPC, and mapped dept)
     if (searchTerm) {
         filtered = filtered.filter(product => {
             const name = (product.name || product['Item Name'] || '').toLowerCase();
             const upc = (product.upc || product.UPC || product['UPC'] || '').toLowerCase();
-            const dept = (product.department || product.Department || product['Department'] || '').toLowerCase();
+            const rawDept = (product.department || product.Department || product['Department'] || '');
+            const dept = mapDepartment(rawDept).toLowerCase();
             return name.includes(searchTerm) || upc.includes(searchTerm) || dept.includes(searchTerm);
         });
     }
 
-    // Filter by department
+    // Filter by department (compare against the mapped/display category name)
     if (selectedCategory) {
         filtered = filtered.filter(product => {
-            const dept = product.department || product.Department || product['Department'];
-            return dept === selectedCategory;
+            const raw = product.department || product.Department || product['Department'] || '';
+            return mapDepartment(raw) === selectedCategory;
         });
     }
 

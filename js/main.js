@@ -202,7 +202,7 @@ function getHeaderHTML() {
                         <span></span>
                     </button>
                     <ul class="nav-links">
-                        <li><a href="index.html">Shop</a></li>
+                        <li><a href="index.html">Home</a></li>
                         <li><a href="products.html">Products</a></li>
                         <li><a href="about.html">Our Story</a></li>
                         <li><a href="membership.html">Membership</a></li>
