@@ -347,8 +347,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Contact form — preserve original behavior
+    // Fallback for any unwired forms (contact-form and special-request-form
+    // are handled by js/forms.js and are excluded here).
+    const HANDLED_FORMS = ['contact-form', 'special-request-form'];
     document.querySelectorAll('form').forEach(function(form) {
+        if (HANDLED_FORMS.includes(form.id)) return;
         form.addEventListener('submit', function(e) {
             const action = form.getAttribute('action');
             if (!action || action === '#') {

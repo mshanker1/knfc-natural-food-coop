@@ -241,4 +241,141 @@ If you encounter issues:
 
 ---
 
-Last Updated: 2026-05-14
+## Form Handler Setup (Contact & Special Requests)
+
+This section covers deploying **`FormHandler.gs`** — a second Apps Script
+that receives form submissions from the website, saves them to a Google
+Sheet, and emails `knfcoop@gmail.com`.
+
+### What you'll have when done
+
+| Form | Sheet tab | Email subject prefix |
+|---|---|---|
+| Contact form | `Contact` | `[KNFC Contact]` |
+| Special Requests form | `Special Requests` | `[KNFC Request]` |
+
+Both tabs are created automatically on the first submission.
+The Special Requests tab has a **Status** column (`New` / `In Progress` /
+`Done`) that buyers can update directly in the sheet.
+
+---
+
+### Step 1: Create the Google Sheet
+
+1. Go to [sheets.google.com](https://sheets.google.com) and create a
+   **new blank spreadsheet**.
+2. Name it anything you like, e.g. `KNFC Form Submissions`.
+3. Copy the **Spreadsheet ID** from the URL:
+   ```
+   https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit
+   ```
+   The ID is the long string between `/d/` and `/edit`.
+
+---
+
+### Step 2: Create the Apps Script project
+
+1. Go to [script.google.com](https://script.google.com) and click
+   **New project**.
+2. Name the project `KNFC Form Handler`.
+3. Delete any default code in the editor.
+4. Copy the entire contents of `FormHandler.gs` (in this folder) and
+   paste it into the editor.
+5. Near the top of the script, find:
+   ```javascript
+   const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+   ```
+6. Replace `YOUR_SPREADSHEET_ID_HERE` with the ID you copied in Step 1.
+7. Save (Ctrl+S / Cmd+S).
+
+---
+
+### Step 3: Test the script before deploying
+
+1. In the function dropdown at the top, select **`testFormHandler`**.
+2. Click **Run** (▶️).
+3. Authorize when prompted:
+   - Click **Review permissions** → choose your Google account.
+   - Click **Advanced** → **Go to KNFC Form Handler (unsafe)** → **Allow**.
+   - *(The "unsafe" label is Google's standard warning for unverified
+     scripts — it's safe because you wrote it.)*
+4. Click **Execution log** and confirm you see:
+   ```
+   ✓ Spreadsheet found: KNFC Form Submissions
+   ✓ Contact row written to sheet.
+   ✓ Special Request row written to sheet.
+   All checks passed.
+   ```
+5. Open the Google Sheet — you should see two tabs (`Contact` and
+   `Special Requests`) each with one test row. Delete those rows.
+
+---
+
+### Step 4: Deploy as a web app
+
+1. Click **Deploy** → **New deployment**.
+2. Click the ⚙️ gear icon next to "Select type" → choose **Web app**.
+3. Fill in the settings:
+   - **Description**: `KNFC Form Handler v1`
+   - **Execute as**: Me *(your Google account)*
+   - **Who has access**: **Anyone**
+4. Click **Deploy** → authorize again if prompted.
+5. Copy the **Web app URL** — it looks like:
+   ```
+   https://script.google.com/macros/s/AKfycbx.../exec
+   ```
+
+---
+
+### Step 5: Configure the website
+
+1. Open `js/forms.js` in the website code.
+2. Find this line near the top:
+   ```javascript
+   const FORM_HANDLER_URL = 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE';
+   ```
+3. Replace `YOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE` with the URL from Step 4.
+4. Save, commit, and push to GitHub.
+
+**That's it.** The next form submission will write to the sheet and send
+an email to `knfcoop@gmail.com`.
+
+---
+
+### Updating the script later
+
+If you need to change the script (e.g. add a field), save the file then:
+
+1. **Deploy** → **Manage deployments**.
+2. Click the ✏️ edit icon on your deployment.
+3. Under **Version**, choose **New version**.
+4. Click **Deploy**.
+
+The URL stays the same — no changes needed to `forms.js`.
+
+---
+
+### Troubleshooting forms
+
+**Form submits but nothing appears in the sheet**
+- Open the Apps Script project → **Executions** (left sidebar) to see
+  recent runs and any error messages.
+- Confirm `SPREADSHEET_ID` in the script matches the sheet URL exactly.
+
+**Form shows "Something went wrong" on the website**
+- Open browser DevTools (F12) → Console — look for a network error on
+  the fetch to the Apps Script URL.
+- Confirm the script is deployed with **Who has access: Anyone** (not
+  "Only myself").
+- Confirm `FORM_HANDLER_URL` in `js/forms.js` matches the deployed URL.
+
+**No email arrives**
+- Check the Gmail spam folder for `knfcoop@gmail.com`.
+- In the Apps Script editor, check **Executions** for errors in
+  `emailContact` or `emailSpecialRequest`.
+- Make sure the script was authorized with Gmail scope (re-run
+  `testFormHandler` and re-authorize if unsure).
+
+---
+
+Last Updated: 2026-06-12
