@@ -9,7 +9,7 @@
  * See google-apps-script/SETUP.md §Form Handler for step-by-step instructions.
  */
 
-const FORM_HANDLER_URL = 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE';
+const FORM_HANDLER_URL = 'https://script.google.com/macros/s/AKfycbyS-bGcYghRatwNniQtJU4KxwBvyQc_ELWRSuuBtLbq0jzTVrHKxyNuYa28eQ2t6D3-/exec';
 
 document.addEventListener('DOMContentLoaded', function () {
   wireForm('contact-form',         'contact');
