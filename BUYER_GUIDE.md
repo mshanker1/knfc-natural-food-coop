@@ -1,12 +1,18 @@
 # Buyer's Guide: Updating Website Content
 
-This guide is for KNFC buyers and staff who need to update inventory, sales, announcements, and other content on the website.
+This guide is for KNFC buyers and staff who need to update sales, announcements, staff picks, and educational content on the website.
 
 ## Overview
 
-All website content comes from CSV files stored in ONE Google Drive folder. When you update files in this folder, the website automatically shows the new data!
+### Inventory — automatic, no action needed
 
-**Key Benefit**: No technical knowledge required - just upload/replace CSV files and you're done!
+Product inventory on the website is **pulled directly from the POS system via API and refreshed every hour**. Stock levels, prices, and product names are always up to date. You do not need to export, edit, or upload an inventory file.
+
+### Everything else — managed via Google Drive
+
+Sales flyers, announcements, staff picks, and educational content come from CSV files stored in the **KNFC Website Files** folder on Google Drive. When you update those files, the website reflects the change within about 30 seconds.
+
+---
 
 ## Table of Contents
 
@@ -21,445 +27,282 @@ All website content comes from CSV files stored in ONE Google Drive folder. When
 
 ## Quick Start
 
-**After initial setup is complete, updating content is simple:**
+**To update any content file:**
 
-1. Open the Google Drive folder ("KNFC Website Files")
-2. Find the file you want to update (e.g., inventory.csv)
-3. Edit in Excel/Sheets, save as CSV
-4. Upload to Google Drive, choose "Replace"
-5. Done! Website updates in 30-60 seconds
+1. Open the **KNFC Website Files** folder in Google Drive
+2. Find the file you want to update (e.g., `sales.csv`)
+3. Edit it in Excel or Google Sheets, then save as CSV with the same filename
+4. Upload to Google Drive → right-click the original file → **Manage versions** → **Upload new version**
+5. Wait 30–60 seconds, then hard-refresh the website
+
+**To check inventory:** just visit the Products page — it's always current.
 
 ---
 
 ## File Overview
 
-Your Google Drive folder contains these CSV files:
+| File | Purpose | Update Frequency | Who updates it |
+|------|---------|------------------|----------------|
+| ~~inventory.csv~~ | ~~Product inventory~~ | **Auto-synced from POS hourly** | **POS system (automatic)** |
+| **sales.csv** | Weekly sales flyer | Weekly | Buyers |
+| **announcements.csv** | Homepage announcements | As needed | Staff |
+| **highlights.csv** | Staff picks by department | Monthly | Staff |
+| **education.csv** | Guides and educational content | As needed | Staff |
 
-| File | Purpose | Update Frequency |
-|------|---------|------------------|
-| **inventory.csv** | Product inventory displayed on Products page | Daily/Weekly |
-| **sales.csv** | Weekly sales flyer (optional) | Weekly |
-| **announcements.csv** | Homepage announcements (optional) | As needed |
-| **highlights.csv** | Staff picks by department (optional) | Monthly |
-| **education.csv** | Educational content/articles (optional) | As needed |
-
-**Required**: Only `inventory.csv` is required. Others are optional.
-
-**Important**: Always use these exact filenames! The website looks for files by name.
+**Note:** `inventory.csv` no longer exists in the Google Drive folder and does not need to be managed. The website fetches inventory data directly from the POS API.
 
 ---
 
 ## How to Update Files
 
-### Method 1: Edit and Replace (Recommended)
-
-This is the standard workflow:
+### Standard workflow (for sales, announcements, highlights, education)
 
 **Step 1: Download the current file**
-1. Go to your Google Drive folder
-2. Find the file you want to update (e.g., `inventory.csv`)
-3. Right-click > Download
-4. Save to your computer
+1. Go to the KNFC Website Files folder in Google Drive
+2. Right-click the file you want to update → **Download**
+3. Save to your computer
 
 **Step 2: Edit the file**
-1. Open in Excel, Google Sheets, or your preferred spreadsheet program
-2. Make your changes
-   - Update quantities
-   - Change prices
-   - Add new products
-   - Remove discontinued items
-3. Keep the column headers exactly as they are
-4. Don't change the column order
+1. Open in Excel, Google Sheets, or any spreadsheet program
+2. Make your changes — keep column headers and column order exactly as they are
+3. Do not add or remove columns
 
 **Step 3: Save as CSV**
-1. File > Save As
-2. Choose "CSV (Comma delimited)" format
-3. Use the **same filename** (e.g., `inventory.csv`)
-4. Save to your computer
+1. File → Save As → choose **CSV (Comma delimited)** format
+2. Use the **exact same filename** (e.g., `sales.csv`)
 
 **Step 4: Upload to Google Drive**
 1. Go back to the Google Drive folder
-2. Find the **original file** (same name)
-3. Right-click on it > "Manage versions"
-4. Click "Upload new version"
-5. Select your updated CSV file
-6. Click "Upload"
+2. Right-click the **original file** → **Manage versions** → **Upload new version**
+3. Select your updated CSV → **Upload**
 
 **Step 5: Verify**
-1. Wait 30-60 seconds
-2. Visit the website
-3. Hard refresh your browser:
-   - Windows: Ctrl + Shift + R
-   - Mac: Cmd + Shift + R
-4. Confirm your changes appear
+1. Wait 30–60 seconds
+2. Visit the website and hard-refresh:
+   - Windows: **Ctrl + Shift + R**
+   - Mac: **Cmd + Shift + R**
+3. Confirm your changes appear
 
-### Method 2: Delete and Re-Upload
+### Alternative: Delete and re-upload
 
-Use this method if "Manage versions" isn't working:
+If "Manage versions" isn't available:
 
-1. Download the current file (backup!)
+1. Download the current file as a backup
 2. Delete the old file from Google Drive
-3. Upload your new file with the **exact same filename**
-4. Done!
-
-**Important**: Must use the exact same filename or the website won't find it.
+3. Upload the new file using the **exact same filename**
 
 ---
 
 ## CSV File Formats
 
-### 1. inventory.csv
+### 1. sales.csv
 
 **Columns (in this order):**
 
 | Column | Required | Format | Example |
 |--------|----------|--------|---------|
-| UPC | Required | Number or text | 123456789012 |
-| Item Name | Required | Text | Organic Bananas |
-| Department | Required | Text | Produce |
-| Remaining | Required | Number | 45 |
-| Sales Price | Required | Number | 0.79 or $0.79 |
+| Title | Required | Text | Weekly Member Specials |
+| Subtitle | Optional | Text | Valid June 15–21 |
+| PDF_URL | Optional | URL | https://drive.google.com/file/d/... |
+| Active | Required | yes or no | yes |
 
 **Tips:**
-- **Remaining** must be a plain number (no text like "45 units")
-- **Sales Price** can include $ or not (both `4.99` and `$4.99` work)
-- Use consistent department names (e.g., always "Produce", not sometimes "Fresh Produce")
-- Empty UPC is OK for items without barcodes
+- Only one row should have `Active = yes` at a time
+- To share a PDF: upload it to Google Drive, right-click → **Share** → **Anyone with the link** → copy the link
+- Set the previous week's row to `Active = no` before adding the new week
 
-**Example:**
-```csv
-UPC,Item Name,Department,Remaining,Sales Price
-123456789012,Organic Bananas,Produce,45,0.79
-987654321098,Almond Flour,Bulk,12,8.99
-555123456789,Oat Milk,Dairy,8,4.49
-```
-
-### 2. sales.csv (Optional)
+### 2. announcements.csv
 
 **Columns (in this order):**
 
-| Column | Required | Example |
-|--------|----------|---------|
-| Title | Required | Weekly Member Specials |
-| Subtitle | Optional | Valid March 15-21 |
-| PDF_URL | Optional | https://drive.google.com/file/d/... |
-| Active | Required | yes or no |
+| Column | Required | Format | Example |
+|--------|----------|--------|---------|
+| Title | Required | Text | Store Closure Notice |
+| Body | Required | Text | We'll be closed on July 4th |
+| Date | Required | YYYY-MM-DD | 2026-07-04 |
+| Category | Optional | info / alert / event | alert |
+| Active | Required | yes or no | yes |
 
 **Tips:**
-- Set **Active** to `yes` to show, `no` to hide
-- Only one sales flyer should be active at a time
-- **PDF_URL**: Upload PDF to Google Drive, share as "Anyone can view", paste link here
+- The three most recent active announcements appear on the homepage
+- **Category** controls the badge colour: `info` = blue, `alert` = red, `event` = green
+- Set old announcements to `Active = no` to remove them
 
-### 3. announcements.csv (Optional)
+### 3. highlights.csv (Staff Picks)
 
 **Columns (in this order):**
 
-| Column | Required | Example |
-|--------|----------|---------|
-| Title | Required | Store Closure Notice |
-| Body | Required | We'll be closed on Memorial Day |
-| Date | Required | 2026-05-25 |
-| Category | Optional | info, alert, event |
-| Active | Required | yes or no |
+| Column | Required | Format | Example |
+|--------|----------|--------|---------|
+| Title | Required | Text | Staff Pick: GT's Kombucha |
+| Description | Required | Text | Our best-selling fermented tea |
+| Department | Required | Text | Beverages |
+| Recommended_By | Optional | Text | Sarah, Store Manager |
+| Image_URL | Optional | URL | https://... |
+| Active | Required | yes or no | yes |
 
 **Tips:**
-- Set **Active** to `yes` to show, `no` to hide
-- **Date** format: YYYY-MM-DD
-- Most recent 3 active announcements appear on homepage
-- **Category** determines badge color (info=blue, alert=red, event=green)
+- Aim for one active pick per department
+- Set old picks to `Active = no` when replacing them
 
-### 4. highlights.csv (Staff Picks - Optional)
+### 4. education.csv (Educational Content)
 
 **Columns (in this order):**
 
-| Column | Required | Example |
-|--------|----------|---------|
-| Title | Required | Manager's Pick: Kombucha |
-| Description | Required | Our best-selling fermented tea... |
-| Department | Required | Beverage |
-| Recommended_By | Optional | Sarah, Store Manager |
-| Image_URL | Optional | https://... |
-| Active | Required | yes or no |
+| Column | Required | Format | Example |
+|--------|----------|--------|---------|
+| Title | Required | Text | What Is Organic Certification? |
+| Content | Required | Text | Organic certification means... |
+| Category | Required | Text | Guide, Farm Spotlight, etc. |
+| Author | Optional | Text | KNFC Staff |
+| Date | Required | YYYY-MM-DD | 2026-06-01 |
+| Active | Required | yes or no | yes |
 
 **Tips:**
-- One staff pick per department
-- Set **Active** to `yes` to show, `no` to hide
-
-### 5. education.csv (Educational Content - Optional)
-
-**Columns (in this order):**
-
-| Column | Required | Example |
-|--------|----------|---------|
-| Title | Required | What is Organic Certification? |
-| Content | Required | Organic certification means... |
-| Category | Required | Guide, Farm Spotlight, etc. |
-| Author | Optional | KNFC Staff |
-| Date | Required | 2026-05-14 |
-| Active | Required | yes or no |
-
-**Tips:**
-- Set **Active** to `yes` to show, `no` to hide
-- **Date** format: YYYY-MM-DD
-- **Content** can be multiple paragraphs (CSV allows line breaks in quoted fields)
+- Content can span multiple paragraphs — wrap the field in quotes in the CSV if it contains commas or line breaks
+- Set old articles to `Active = no` to archive them
 
 ---
 
 ## Common Tasks
 
-### Update Product Inventory
+### Post a new weekly sales flyer
 
-**Scenario**: You need to update stock quantities and prices.
+1. Create your sales PDF and upload it to Google Drive
+2. Share the PDF as "Anyone with the link can view" and copy the link
+3. Download `sales.csv` and open in Excel
+4. Set the previous row's `Active` to `no`
+5. Add a new row: Title, Subtitle (date range), the PDF link, `Active = yes`
+6. Save as CSV → upload to Google Drive via Manage versions
 
-1. Download `inventory.csv` from Google Drive
-2. Open in Excel
-3. Update the **Remaining** and **Sales Price** columns
-4. Save as CSV (same filename)
-5. Upload to Google Drive using "Manage versions" > "Upload new version"
+### Post an announcement
 
-### Add New Products
+1. Download `announcements.csv` (or create it from the template below if it doesn't exist)
+2. Add a new row with your Title, Body, Date, Category, and `Active = yes`
+3. Save as CSV → upload to Google Drive
 
-**Scenario**: You're carrying a new product line.
-
-1. Download `inventory.csv`
-2. Open in Excel
-3. Add new rows at the bottom:
-   - Fill in UPC (or leave blank)
-   - Enter Item Name
-   - Enter Department (use existing department names for consistency)
-   - Enter quantity in Remaining
-   - Enter price in Sales Price
-4. Save as CSV
-5. Upload using "Manage versions" > "Upload new version"
-
-### Remove Discontinued Products
-
-**Scenario**: You're no longer carrying certain items.
-
-1. Download `inventory.csv`
-2. Open in Excel
-3. Delete the rows for discontinued products
-4. Save as CSV
-5. Upload using "Manage versions" > "Upload new version"
-
-### Change Weekly Sales
-
-**Scenario**: New sales week starting.
-
-1. Create your sales flyer PDF
-2. Upload PDF to Google Drive
-3. Share PDF as "Anyone with link can view"
-4. Copy the share link
-5. Download `sales.csv`
-6. Set previous week's row Active = no
-7. Add new row or update existing row:
-   - Title: "Weekly Member Specials"
-   - Subtitle: "Valid May 15-21"
-   - PDF_URL: (paste the PDF share link)
-   - Active: yes
-8. Save as CSV
-9. Upload using "Manage versions" > "Upload new version"
-
-### Post an Announcement
-
-**Scenario**: You need to alert customers about something.
-
-1. Download `announcements.csv` (or create if doesn't exist)
-2. Open in Excel
-3. Add a new row:
-   - Title: "Store Closure Notice"
-   - Body: "We will be closed on Memorial Day, May 26."
-   - Date: 2026-05-25
-   - Category: alert
-   - Active: yes
-4. Save as CSV
-5. Upload to Google Drive
-
-### Update Staff Picks
-
-**Scenario**: Monthly staff recommendations.
+### Update staff picks
 
 1. Download `highlights.csv`
-2. Open in Excel
-3. Update/add rows for each department's pick
-4. Set Active = yes for current picks, no for old ones
-5. Save as CSV
-6. Upload using "Manage versions" > "Upload new version"
+2. Set the old pick for that department to `Active = no`
+3. Add a new row for the new pick with `Active = yes`
+4. Save as CSV → upload to Google Drive
+
+### Check the live inventory
+
+Just visit the **Products** page on the website — the inventory is pulled from the POS system every hour. There is nothing to upload or edit.
 
 ---
 
 ## Troubleshooting
 
-### Problem: Website shows old data after I updated the file
+### Website shows old content after I updated a file
 
-**Solution**:
-1. Wait 30-60 seconds (it takes a moment to propagate)
-2. Hard refresh your browser:
-   - Windows: Ctrl + Shift + R or Ctrl + F5
-   - Mac: Cmd + Shift + R
-3. Try in a different browser or incognito/private window
-4. Verify you uploaded to the correct folder
-5. Verify you used "Replace" or "Upload new version", not uploaded a new file
+1. Wait 60 seconds
+2. Hard-refresh: **Ctrl + Shift + R** (Windows) or **Cmd + Shift + R** (Mac)
+3. Try an incognito/private browser window
+4. Verify you used **Manage versions → Upload new version**, not uploaded a new separate file
+5. Confirm the filename is exactly correct (case-sensitive, no spaces)
 
-### Problem: Website shows "Unable to load inventory"
+### Content not appearing at all
 
-**Possible causes:**
-1. **Wrong filename**: Check that your file is named exactly `inventory.csv` (case-sensitive, no spaces)
-2. **File not in folder**: Make sure the file is directly in the Google Drive folder, not in a subfolder
-3. **File format**: Verify it's a CSV file, not Excel (.xlsx)
-4. **Folder not public**: The Google Drive folder must be shared as "Anyone with the link can view"
-5. **Google Apps Script issue**: The proxy may be down or misconfigured (contact web developer)
+- **Wrong filename:** must match exactly — `sales.csv`, not `Sales.csv` or `sales - Copy.csv`
+- **Wrong folder:** file must be directly in the KNFC Website Files folder, not inside a subfolder
+- **Wrong file format:** must be `.csv`, not `.xlsx`
+- **Folder not public:** the Google Drive folder must be shared as "Anyone with the link can view"
 
-**How to check:**
-- Open browser developer console (F12)
-- Look for error messages in the Console tab
-- Check Network tab for failed requests
+### Inventory looks out of date on the website
 
-### Problem: Some products missing from website
+The inventory syncs from the POS every hour. If data looks stale:
+- Wait up to one hour for the next automatic sync
+- Hard-refresh the Products page
+- If the problem persists after an hour, contact your web developer — there may be an issue with the POS API connection
 
-**Possible causes:**
-1. **Missing Item Name**: Products without an Item Name value won't display
-2. **CSV formatting error**: Check for:
-   - Extra commas in the CSV
-   - Missing columns
-   - Incorrect column order
-   - Product name contains a comma but isn't properly quoted
+### Some products missing from inventory
 
-**How to fix:**
-- Open CSV in a text editor (Notepad, TextEdit)
-- Look for lines with missing values or extra commas
-- If a field contains a comma, it must be quoted: `"Flour, Almond"`
-- Re-save from Excel as CSV to fix formatting
+Products are excluded from the website display if:
+- Their quantity in the POS is **0 or less** (out-of-stock items are hidden by design)
+- Their Item Name is blank in the POS
 
-### Problem: Prices or quantities look wrong
+If an in-stock item is missing, check its record in the POS system directly.
 
-**Possible causes:**
-1. **Wrong data type**: Remaining must be a number, not text
-2. **Column mismatch**: Columns may be in wrong order
-3. **Extra characters**: Remove commas from numbers (use `1000`, not `1,000`)
+### CSV formatting problems
 
-**How to fix:**
-- Verify column order matches the format exactly
-- Remove thousand separators (commas) from numbers
-- Remove currency symbols from the Remaining column
+If fields contain commas, wrap them in double-quotes:
+```
+"Flour, Almond",Bulk,12,8.99
+```
 
-### Problem: Can't find "Manage versions" option
-
-**Solution**:
-- Right-click on the file
-- Select "Manage versions"
-- If you don't see this option:
-  - Make sure you're right-clicking the file itself, not a folder
-  - Try using the Google Drive web interface (not the desktop app)
-  - Alternative: Delete old file and upload new one with same filename
-
-### Problem: File uploaded but website can't find it
-
-**Possible causes:**
-1. **Wrong filename**: Must be exact (e.g., `inventory.csv`, not `Inventory.csv` or `inventory - Copy.csv`)
-2. **File in subfolder**: Must be in the main folder, not nested inside another folder
-3. **File not CSV**: Must be CSV format, not Excel
-
-**How to check:**
-- Go to your Google Drive folder
-- Look at the file list
-- Verify filename exactly matches what's in `js/inventory.js` configuration
-- Check file type shows "text/csv" or similar
+If a field contains a quote character, double it up:
+```
+"Bob""s Red Mill Oats",Cereal,6,5.99
+```
 
 ---
 
 ## Best Practices
 
 ### ✅ DO:
-
-- Use "Manage versions" > "Upload new version" to replace files
+- Use **Manage versions → Upload new version** to replace files (never upload a second copy)
 - Keep column headers and order exactly as documented
-- Use consistent naming for departments
-- Test changes on the website after uploading
-- Keep a backup copy of CSV files on your computer
-- Use plain numbers for quantities (no "45 units", just "45")
-- Use the same filenames every time
+- Use consistent department names
+- Test on the website after every upload
+- Keep a local backup of your CSV files
 
 ### ❌ DON'T:
-
-- Don't upload a new file each time (breaks the system!)
+- Don't manually edit or upload an `inventory.csv` — the POS API handles this automatically
 - Don't rename columns or change their order
 - Don't change filenames
-- Don't use commas in numbers (no `1,000`, use `1000`)
-- Don't put CSV files in subfolders
-- Don't delete files and forget to replace them
-- Don't mix up column data (e.g., putting prices in quantity column)
+- Don't use commas inside numbers (`1000`, not `1,000`)
+- Don't put files in subfolders
 
 ---
 
 ## File Templates
 
-Need to create a new file from scratch? Here are templates:
-
-### inventory.csv Template
-```csv
-UPC,Item Name,Department,Remaining,Sales Price
-123456789012,Example Product,Produce,10,4.99
-```
-
-### sales.csv Template
+### sales.csv
 ```csv
 Title,Subtitle,PDF_URL,Active
-Weekly Member Specials,Valid May 15-21,https://drive.google.com/file/d/YOUR_PDF_ID/view,yes
+Weekly Member Specials,Valid June 15–21,https://drive.google.com/file/d/YOUR_PDF_ID/view,yes
 ```
 
-### announcements.csv Template
+### announcements.csv
 ```csv
 Title,Body,Date,Category,Active
-Welcome,Welcome to our store!,2026-05-14,info,yes
+Welcome,Welcome to the new KNFC website!,2026-06-01,info,yes
 ```
 
-### highlights.csv Template
+### highlights.csv
 ```csv
 Title,Description,Department,Recommended_By,Image_URL,Active
-Great Product,This is amazing!,Produce,Sarah,https://example.com/image.jpg,yes
+Staff Pick: GT's Kombucha,Our best-seller in the cooler,Beverages,Sarah,,yes
 ```
 
-### education.csv Template
+### education.csv
 ```csv
 Title,Content,Category,Author,Date,Active
-How to Shop Organic,Start by reading labels...,Guide,KNFC Staff,2026-05-14,yes
+What Is Organic?,Organic certification means...,Guide,KNFC Staff,2026-06-01,yes
 ```
 
 ---
 
 ## Getting Help
 
-If you encounter issues not covered in this guide:
+If you encounter an issue not covered here:
 
-1. **Check the troubleshooting section** above
-2. **Contact your web developer** with:
+1. Check the troubleshooting section above
+2. Contact your web developer with:
    - What you were trying to do
    - What happened instead
    - Any error messages
-   - Link to the Google Drive folder
-   - Screenshot if helpful
+   - A screenshot if helpful
 
-3. **Common files to check** (for technical staff):
-   - `google-apps-script/DriveProxy.gs` - The proxy script configuration
-   - `js/inventory.js` - Inventory configuration
-   - `js/content.js` - Content configuration
-   - Browser console - Error messages
-
----
-
-## Summary
-
-**For most updates, you only need to remember:**
-
-1. Download the CSV file from Google Drive
-2. Edit it in Excel/Sheets
-3. Save as CSV with the same filename
-4. Upload to Google Drive using "Manage versions" > "Upload new version"
-5. Wait 30 seconds, then refresh the website
-
-**That's it!** No code changes, no technical setup needed.
+**Technical files for reference (web developer):**
+- `google-apps-script/DriveProxy.gs` — Google Drive proxy script
+- `google-apps-script/FormHandler.gs` — Contact/special-request form handler
+- `js/inventory.js` — POS API connection and inventory display logic
+- `js/content.js` — Sales, announcements, staff picks, education logic
 
 ---
 
-Last Updated: 2026-05-14
+Last Updated: 2026-06-14
