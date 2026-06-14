@@ -97,19 +97,25 @@ If "Manage versions" isn't available:
 
 ### 1. sales.csv
 
+One row per sale item — similar to announcements. Only rows with `Active = yes` appear on the website.
+
 **Columns (in this order):**
 
 | Column | Required | Format | Example |
 |--------|----------|--------|---------|
-| Title | Required | Text | Weekly Member Specials |
-| Subtitle | Optional | Text | Valid June 15–21 |
-| PDF_URL | Optional | URL | https://drive.google.com/file/d/... |
+| Item | Required | Text | GT's Gingerade Kombucha 16oz |
+| Description | Optional | Text | Member price this week only |
+| Sale_Price | Required | Number | 3.99 |
+| Regular_Price | Optional | Number | 4.69 |
+| Start_Date | Optional | YYYY-MM-DD | 2026-06-15 |
+| End_Date | Optional | YYYY-MM-DD | 2026-06-21 |
 | Active | Required | yes or no | yes |
 
 **Tips:**
-- Only one row should have `Active = yes` at a time
-- To share a PDF: upload it to Google Drive, right-click → **Share** → **Anyone with the link** → copy the link
-- Set the previous week's row to `Active = no` before adding the new week
+- Add one row per sale item — there is no limit on how many active rows you can have
+- Set items to `Active = no` when the sale ends (or delete the row)
+- `Regular_Price` is optional but useful — it lets customers see the savings
+- Dates are optional but help staff remember when sales started/ended
 
 ### 2. announcements.csv
 
@@ -166,14 +172,12 @@ If "Manage versions" isn't available:
 
 ## Common Tasks
 
-### Post a new weekly sales flyer
+### Update the weekly sales
 
-1. Create your sales PDF and upload it to Google Drive
-2. Share the PDF as "Anyone with the link can view" and copy the link
-3. Download `sales.csv` and open in Excel
-4. Set the previous row's `Active` to `no`
-5. Add a new row: Title, Subtitle (date range), the PDF link, `Active = yes`
-6. Save as CSV → upload to Google Drive via Manage versions
+1. Download `sales.csv` and open in Excel
+2. Set last week's items to `Active = no` (or delete those rows)
+3. Add a new row for each sale item: Item name, Description, Sale_Price, Regular_Price, dates, `Active = yes`
+4. Save as CSV → upload to Google Drive via Manage versions
 
 ### Post an announcement
 
@@ -262,8 +266,9 @@ If a field contains a quote character, double it up:
 
 ### sales.csv
 ```csv
-Title,Subtitle,PDF_URL,Active
-Weekly Member Specials,Valid June 15–21,https://drive.google.com/file/d/YOUR_PDF_ID/view,yes
+Item,Description,Sale_Price,Regular_Price,Start_Date,End_Date,Active
+GT's Gingerade Kombucha 16oz,Member price this week,3.99,4.69,2026-06-15,2026-06-21,yes
+Chocolove Dark Chocolate 3.2oz,,4.79,5.39,2026-06-15,2026-06-21,yes
 ```
 
 ### announcements.csv
