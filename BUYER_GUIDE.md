@@ -296,7 +296,7 @@ What Is Organic?,Organic certification means...,Guide,KNFC Staff,2026-06-01,yes
 If you encounter an issue not covered here:
 
 1. Check the troubleshooting section above
-2. Contact your web developer with:
+2. Contact your web developer (Murali) with:
    - What you were trying to do
    - What happened instead
    - Any error messages
