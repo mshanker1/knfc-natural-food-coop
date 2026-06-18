@@ -14,28 +14,39 @@ Sales flyers, announcements, staff picks, and educational content come from CSV 
 
 ---
 
-## Table of Contents
+---
 
-1. [Quick Start](#quick-start)
-2. [File Overview](#file-overview)
-3. [How to Update Files](#how-to-update-files)
-4. [CSV File Formats](#csv-file-formats)
-5. [Common Tasks](#common-tasks)
-6. [Troubleshooting](#troubleshooting)
+## At a Glance — What to Update and When
+
+> **Inventory is automatic** — you never need to touch it. The website pulls stock levels and prices directly from the POS system every hour.
+
+The only files you ever edit are the four below. Each lives in the **KNFC Website Files** folder on Google Drive.
+
+| File | Controls | When to update | Columns to fill in |
+|------|----------|----------------|--------------------|
+| **sales.csv** | Monthly sales on the Products page | Monthly (or whenever a sale starts/ends) | Item, Sale Price, Active (yes/no) |
+| **announcements.csv** | Banners on the homepage | Whenever there's news | Title, Message, Date, Active (yes/no) |
+| **highlights.csv** | Staff picks on the Products page | Monthly | Item name, Description, Department, Active (yes/no) |
+| **education.csv** | Articles in the "Learn" section | As needed | Title, Content, Category, Active (yes/no) |
+
+**The golden rule:** set a row's `Active` column to **no** to hide it, **yes** to show it. You never need to delete rows — just switch the flag.
+
+**How to update any file (3 steps):**
+1. Download the file from the Google Drive folder
+2. Open in Excel or Google Sheets, make your changes, save as CSV with the **same filename**
+3. In Google Drive, right-click the original file → **Manage versions** → **Upload new version**
+
+The website reflects your changes within about 30 seconds.
 
 ---
 
-## Quick Start
+## Table of Contents
 
-**To update any content file:**
-
-1. Open the **KNFC Website Files** folder in Google Drive
-2. Find the file you want to update (e.g., `sales.csv`)
-3. Edit it in Excel or Google Sheets, then save as CSV with the same filename
-4. Upload to Google Drive → right-click the original file → **Manage versions** → **Upload new version**
-5. Wait 30–60 seconds, then hard-refresh the website
-
-**To check inventory:** just visit the Products page — it's always current.
+1. [At a Glance](#at-a-glance--what-to-update-and-when)
+2. [Detailed Instructions](#how-to-update-files)
+3. [File Formats (column-by-column)](#csv-file-formats)
+4. [Common Tasks](#common-tasks)
+5. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -44,7 +55,7 @@ Sales flyers, announcements, staff picks, and educational content come from CSV 
 | File | Purpose | Update Frequency | Who updates it |
 |------|---------|------------------|----------------|
 | ~~inventory.csv~~ | ~~Product inventory~~ | **Auto-synced from POS hourly** | **POS system (automatic)** |
-| **sales.csv** | Weekly sales flyer | Weekly | Buyers |
+| **sales.csv** | Monthly sales | Monthly | Buyers |
 | **announcements.csv** | Homepage announcements | As needed | Staff |
 | **highlights.csv** | Staff picks by department | Monthly | Staff |
 | **education.csv** | Guides and educational content | As needed | Staff |
@@ -97,7 +108,7 @@ If "Manage versions" isn't available:
 
 ### 1. sales.csv
 
-One row per sale item — similar to announcements. Only rows with `Active = yes` appear on the website.
+One row per sale item. Only rows with `Active = yes` appear on the website. Update this monthly (or whenever a sale starts or ends).
 
 **Columns (in this order):**
 
@@ -113,7 +124,7 @@ One row per sale item — similar to announcements. Only rows with `Active = yes
 
 **Tips:**
 - Add one row per sale item — there is no limit on how many active rows you can have
-- Set items to `Active = no` when the sale ends (or delete the row)
+- Set `Active` to `no` when a sale ends — no need to delete the row
 - `Regular_Price` is optional but useful — it lets customers see the savings
 - Dates are optional but help staff remember when sales started/ended
 
@@ -172,10 +183,10 @@ One row per sale item — similar to announcements. Only rows with `Active = yes
 
 ## Common Tasks
 
-### Update the weekly sales
+### Update the monthly sales
 
 1. Download `sales.csv` and open in Excel
-2. Set last week's items to `Active = no` (or delete those rows)
+2. Set last month's items to `Active = no`
 3. Add a new row for each sale item: Item name, Description, Sale_Price, Regular_Price, dates, `Active = yes`
 4. Save as CSV → upload to Google Drive via Manage versions
 
@@ -310,4 +321,4 @@ If you encounter an issue not covered here:
 
 ---
 
-Last Updated: 2026-06-14
+Last Updated: 2026-06-18
