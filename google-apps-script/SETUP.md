@@ -42,7 +42,7 @@ Upload these CSV files to your folder:
 1. **inventory.csv** - Product inventory (required)
    - Columns: UPC, Item Name, Department, Remaining, Sales Price
 
-2. **sales.csv** - Weekly sales flyer (optional)
+2. **sales.csv** - Monthly sales (optional)
    - Columns: Item Name, Description, Regular Price, Sale Price, Department
 
 3. **announcements.csv** - Store announcements (optional)

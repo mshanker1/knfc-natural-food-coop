@@ -236,7 +236,7 @@ function getFooterHTML() {
                     <h4>Shop</h4>
                     <ul>
                         <li><a href="products.html">Products</a></li>
-                        <li><a href="products.html#sales">This Week's Sales</a></li>
+                        <li><a href="products.html#sales">This Month's Sales</a></li>
                         <li><a href="products.html#staff-picks">Staff Picks</a></li>
                         <li><a href="special-requests.html">Special Requests</a></li>
                     </ul>
