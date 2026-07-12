@@ -1118,7 +1118,7 @@ p { text-wrap: pretty; }
     letter-spacing: 0.06em;
     color: var(--color-gray);
     margin-top: 12px;
-    text-transform: uppercase;
+    text-transform: none;
 }
 .loading-spinner {
     display: flex;
