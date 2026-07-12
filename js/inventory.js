@@ -322,7 +322,14 @@ async function loadInventory() {
                 showError('Google Drive folder not configured. Please see google-apps-script/SETUP.md');
                 return;
             }
-            csvText = await fetchFromDriveFolder(INVENTORY_FILENAME);
+            // Fetch the CSV and the file list in parallel; the list gives us the
+            // actual POS sync time (when DriveProxy last wrote inventory.csv).
+            const [csv, syncTime] = await Promise.all([
+                fetchFromDriveFolder(INVENTORY_FILENAME),
+                fetchInventorySyncTime()
+            ]);
+            csvText   = csv;
+            fetchedAt = syncTime || new Date();
         } else if (DATA_SOURCE === 'google-sheets') {
             if (GOOGLE_SHEET_CSV_URL === 'YOUR_GOOGLE_SHEETS_PUBLISHED_CSV_URL_HERE') {
                 showError('Google Sheets URL not configured. Please update GOOGLE_SHEET_CSV_URL.');
@@ -334,7 +341,7 @@ async function loadInventory() {
         }
 
         inventoryData = parseCSV(csvText);
-        fetchedAt = new Date();
+        if (!fetchedAt) fetchedAt = new Date(); // fallback for non-Drive modes
         populateCategories();
         renderInventory(inventoryData);
         setupFilters();
@@ -359,6 +366,22 @@ async function fetchFromDriveFolder(filename) {
     }
 
     return await response.text();
+}
+
+/**
+ * Fetch the last-modified time of inventory.csv from the Drive folder file list.
+ * Returns a Date representing when the POS last synced, or null on any error.
+ */
+async function fetchInventorySyncTime() {
+    try {
+        const response = await fetch(GOOGLE_DRIVE_API_URL + '?action=list');
+        if (!response.ok) return null;
+        const files = JSON.parse(await response.text());
+        const entry = files.find(function(f) { return f.name === INVENTORY_FILENAME; });
+        return entry ? new Date(entry.lastModified) : null;
+    } catch (e) {
+        return null;
+    }
 }
 
 /**
