@@ -693,18 +693,25 @@ function escapeHtml(text) {
 
 /**
  * Update the last-updated element with an optional timestamp and a count line.
+ * Shows a warning if the inventory is more than 2 hours old.
  */
 function setLastUpdated(countText) {
     if (!lastUpdatedEl) return;
     var ts = '';
+    var stale = false;
     if (fetchedAt) {
         ts = 'Last refreshed: ' + fetchedAt.toLocaleDateString('en-US', {
             month: 'long', day: 'numeric', year: 'numeric'
         }) + ' at ' + fetchedAt.toLocaleTimeString('en-US', {
             hour: 'numeric', minute: '2-digit'
         }) + ' · ';
+        stale = (Date.now() - fetchedAt.getTime()) > 2 * 60 * 60 * 1000;
     }
     lastUpdatedEl.textContent = ts + countText;
+    if (stale) {
+        lastUpdatedEl.title = 'Inventory sync appears overdue — check the Apps Script trigger.';
+        lastUpdatedEl.style.color = 'var(--color-brick, #b94a2c)';
+    }
 }
 
 /**
