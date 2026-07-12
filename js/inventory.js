@@ -290,6 +290,7 @@ let inventoryData = [];
 const ITEMS_PER_PAGE = 20;
 let currentPage = 1;
 let currentFilteredProducts = [];
+let fetchedAt = null; // set when inventory data is successfully loaded
 
 // DOM Elements
 const loadingEl = document.getElementById('loading');
@@ -333,6 +334,7 @@ async function loadInventory() {
         }
 
         inventoryData = parseCSV(csvText);
+        fetchedAt = new Date();
         populateCategories();
         renderInventory(inventoryData);
         setupFilters();
@@ -520,7 +522,7 @@ function renderPage() {
         row.innerHTML = '<td colspan="4" style="text-align: center; padding: 2rem;">No products found matching your search.</td>';
         tableBodyEl.appendChild(row);
         renderPaginationControls();
-        lastUpdatedEl.textContent = `Showing 0 of ${inventoryData.length} products`;
+        setLastUpdated('Showing 0 of ' + inventoryData.length + ' products');
         return;
     }
 
@@ -551,7 +553,7 @@ function renderPage() {
     });
 
     // Update last updated / range info
-    lastUpdatedEl.textContent = `Showing ${startIndex + 1}-${endIndex} of ${inventoryData.length} products`;
+    setLastUpdated('Showing ' + (startIndex + 1) + '–' + endIndex + ' of ' + inventoryData.length + ' products');
 
     renderPaginationControls();
 }
@@ -664,6 +666,22 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Update the last-updated element with an optional timestamp and a count line.
+ */
+function setLastUpdated(countText) {
+    if (!lastUpdatedEl) return;
+    var ts = '';
+    if (fetchedAt) {
+        ts = 'Last refreshed: ' + fetchedAt.toLocaleDateString('en-US', {
+            month: 'long', day: 'numeric', year: 'numeric'
+        }) + ' at ' + fetchedAt.toLocaleTimeString('en-US', {
+            hour: 'numeric', minute: '2-digit'
+        }) + ' · ';
+    }
+    lastUpdatedEl.textContent = ts + countText;
 }
 
 /**
