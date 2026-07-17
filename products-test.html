@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Filter Test · KNFC</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="css/styles.css?v=2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Test banner ── */
+        .test-banner {
+            background: oklch(0.32 0.10 28);
+            color: #fff;
+            padding: 14px 24px;
+            font-family: var(--font-body);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .test-banner strong { font-weight: 700; }
+        .test-banner a { color: #ffd; text-underline-offset: 3px; }
+
+        /* ── Mode toggle ── */
+        .mode-toggle {
+            display: inline-flex;
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-left: auto;
+        }
+        .mode-toggle button {
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            border: none;
+            padding: 6px 14px;
+            font-family: var(--font-body);
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .mode-toggle button.active {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            font-weight: 600;
+        }
+        .mode-toggle button:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        /* ── Category comparison panel ── */
+        .category-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin: 24px 0;
+            font-family: var(--font-body);
+            font-size: 13px;
+        }
+        .category-compare h4 {
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--color-gray);
+            margin-bottom: 8px;
+        }
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            columns: 2;
+            column-gap: 12px;
+        }
+        .category-list li {
+            padding: 3px 0;
+            border-bottom: 1px solid var(--color-rule);
+            break-inside: avoid;
+        }
+        .category-list li.active-mode {
+            font-weight: 600;
+            color: oklch(0.32 0.10 28);
+        }
+        .compare-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-rule);
+            border-radius: var(--radius-md);
+            padding: 20px;
+        }
+        .compare-panel.pos-panel { border-color: oklch(0.85 0.05 145); }
+        .mode-label {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .mode-label.current { background: oklch(0.93 0.02 250); color: oklch(0.35 0.08 250); }
+        .mode-label.pos     { background: oklch(0.93 0.04 145); color: oklch(0.32 0.08 145); }
+
+        @media (max-width: 640px) {
+            .category-compare { grid-template-columns: 1fr; }
+            .category-list { columns: 1; }
+            .mode-toggle { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <!-- Test banner -->
+    <div class="test-banner">
+        <strong>TEST PAGE</strong> — comparing department filter approaches.
+        Not linked from the live site. <a href="products.html">← Back to live Products page</a>
+        <div class="mode-toggle">
+            <button id="btn-current" class="active" onclick="setMode('current')">Current (DEPARTMENT_MAP)</button>
+            <button id="btn-pos"     onclick="setMode('pos')">POS Category Hierarchy</button>
+        </div>
+    </div>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <div class="pre">— Department filter comparison —</div>
+                <h1>Category filter <em>test</em>.</h1>
+                <p>Toggle between the two approaches above and compare the department filter dropdown and the "Department" column in the table.</p>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+
+                <!-- Category comparison panel -->
+                <div class="category-compare" id="compare-panel">
+                    <div class="compare-panel">
+                        <span class="mode-label current">Current — DEPARTMENT_MAP</span>
+                        <h4>Filter categories shown to visitors</h4>
+                        <ul class="category-list" id="list-current"><li>Loading…</li></ul>
+                    </div>
+                    <div class="compare-panel pos-panel">
+                        <span class="mode-label pos">Proposed — POS hierarchy</span>
+                        <h4>Filter categories from Lightspeed parents</h4>
+                        <ul class="category-list" id="list-pos"><li>Loading…</li></ul>
+                    </div>
+                </div>
+
+                <hr style="border: none; border-top: 1px solid var(--color-rule); margin: 2rem 0;">
+
+                <!-- Search and Filter Controls -->
+                <div class="products-controls">
+                    <input type="text" id="product-search" class="search-input"
+                           placeholder="Search products..." aria-label="Search products">
+                    <select id="category-filter" class="filter-select" aria-label="Filter by department">
+                        <option value="">All Departments</option>
+                    </select>
+                    <select id="stock-filter" class="filter-select" aria-label="Filter by stock status">
+                        <option value="">All Stock Levels</option>
+                        <option value="in-stock">In Stock</option>
+                        <option value="low-stock">Low Stock</option>
+                    </select>
+                </div>
+
+                <!-- Inventory Table -->
+                <div class="inventory-table-wrapper">
+                    <div id="loading" class="loading-spinner">Loading inventory and categories…</div>
+                    <table class="inventory-table" id="inventory-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Department <span id="dept-mode-label" style="font-weight:400;opacity:0.6;font-size:11px;">(DEPARTMENT_MAP)</span></th>
+                                <th>Remaining</th>
+                                <th>Sales Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-body"></tbody>
+                    </table>
+                </div>
+
+                <div id="pagination-controls" class="pagination-controls" aria-label="Pagination controls"></div>
+                <p class="last-updated" id="last-updated"></p>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="js/main.js"></script>
+    <!-- Inline test script — loads inventory + POS categories, then compares -->
+    <script>
+    // ── Config (matches inventory.js) ───────────────────────────────────────
+    const TEST_API_URL          = 'https://script.google.com/macros/s/AKfycbzSiv-B5YKTu69THHDDZsBuRlvHNeiaavyigJNTPwu_uo98RPkoGHz5SBCzxBwHF0Cp/exec';
+    const TEST_INVENTORY_FILE   = 'inventory.csv';
+    const LOW_STOCK_THRESHOLD   = 5;
+    const ITEMS_PER_PAGE        = 20;
+
+    // ── Current DEPARTMENT_MAP (copy from inventory.js) ──────────────────────
+    const DEPARTMENT_MAP = {
+        'Tea boxed':'Tea','Boxed Tea':'Tea',
+        'Alt coffee':'Coffee','Pkg coffee':'Coffee','Rtd coffee':'Coffee','Bulk coffee':'Coffee',
+        'Fruit juice':'Juice & Water','Veggie juice':'Juice & Water','Coconut water':'Juice & Water',
+        'Bottled water':'Juice & Water','single serv juice':'Juice & Water','Aloe':'Juice & Water',
+        'Beverages':'Beverages','Beverages ':'Beverages','Milk':'Beverages','Soda':'Beverages',
+        'Kombucha':'Beverages','Iced tea':'Beverages','Energy':'Beverages','Cbd':'Beverages',
+        'Dairy':'Dairy & Eggs','Cheese':'Dairy & Eggs','Yogurt':'Dairy & Eggs',
+        'Yogurt/kefir':'Dairy & Eggs','Butter':'Dairy & Eggs','Eggs':'Dairy & Eggs',
+        'Pantry':'Grocery & Pantry','Condiments':'Grocery & Pantry','Cooking oil':'Grocery & Pantry',
+        'Sweeteners':'Grocery & Pantry','Beans':'Grocery & Pantry','Broth':'Grocery & Pantry',
+        'Soup':'Grocery & Pantry','Soup can':'Grocery & Pantry','Soup dried':'Grocery & Pantry',
+        'Sauces':'Grocery & Pantry','Gravy':'Grocery & Pantry','Seasoning':'Grocery & Pantry',
+        'Canned':'Grocery & Pantry','Canned ':'Grocery & Pantry','Dressing':'Grocery & Pantry',
+        'Salsa':'Grocery & Pantry','Fruit Spread':'Grocery & Pantry','Pickles':'Grocery & Pantry',
+        'Mayo':'Grocery & Pantry','Cultured':'Grocery & Pantry','Refrigerated':'Grocery & Pantry',
+        'Seaweed':'Grocery & Pantry','Savory Spread':'Grocery & Pantry','Fruit':'Grocery & Pantry',
+        'Herbs/spices':'Grocery & Pantry','Dried':'Grocery & Pantry',
+        'Bread':'Bread, Grains & Pasta','Bakery':'Bread, Grains & Pasta','Bakery ':'Bread, Grains & Pasta',
+        'Tortillas':'Bread, Grains & Pasta','Pasta':'Bread, Grains & Pasta',
+        'Flour/mixes':'Bread, Grains & Pasta','Cereal':'Bread, Grains & Pasta',
+        'Granola':'Bread, Grains & Pasta','Crackers':'Bread, Grains & Pasta',
+        'Gluten Free':'Bread, Grains & Pasta','Grain products':'Bread, Grains & Pasta',
+        'Salty Snacks':'Snacks & Sweets','Candy':'Snacks & Sweets','Chocolate':'Snacks & Sweets',
+        'Cookies':'Snacks & Sweets','Snack Bars':'Snacks & Sweets','Baked treats':'Snacks & Sweets',
+        'Nut butter':'Snacks & Sweets','Nuts/seeds':'Snacks & Sweets',
+        'Dried fruit':'Snacks & Sweets','Gum':'Snacks & Sweets',
+        'Frozen':'Frozen Foods','Frozen fruit':'Frozen Foods','Ice cream':'Frozen Foods',
+        'Non-Dairy':'Frozen Foods','Non-Dairy ':'Frozen Foods','Dinner':'Frozen Foods',
+        'Pizza Non-Dairy Wheat':'Frozen Foods','Pizza Dairy & Wheat':'Frozen Foods','Treats':'Frozen Foods',
+        'Meat':'Meat, Fish & Protein','Local meat':'Meat, Fish & Protein','Fish':'Meat, Fish & Protein',
+        'Meat Substitute':'Meat, Fish & Protein','Burgers':'Meat, Fish & Protein',
+        'Tofu':'Meat, Fish & Protein','Jerky':'Meat, Fish & Protein',
+        'Supplements':'Supplements & Vitamins','Supplement':'Supplements & Vitamins',
+        'Minerals':'Supplements & Vitamins','Vitamin D':'Supplements & Vitamins',
+        'Vitamin B':'Supplements & Vitamins','Vitamin C':'Supplements & Vitamins',
+        'Multi':'Supplements & Vitamins','Homeopathic':'Supplements & Vitamins',
+        'Herbal capsules':'Supplements & Vitamins','Herbal tinctures':'Supplements & Vitamins',
+        'Probiotic enzymes':'Supplements & Vitamins','Protein drinks':'Supplements & Vitamins',
+        'Protein powder':'Supplements & Vitamins','Cold & flu':'Supplements & Vitamins',
+        'Kratom':'Supplements & Vitamins','Topical':'Supplements & Vitamins',
+        'Lotion/Balm/Cream':'Supplements & Vitamins','mushroom':'Supplements & Vitamins',
+        'Children':'Supplements & Vitamins',
+        'Personal Care':'Personal Care & Beauty','Skin care':'Personal Care & Beauty',
+        'Hair care':'Personal Care & Beauty','Oral Care':'Personal Care & Beauty',
+        'Bar Soap/Hand':'Personal Care & Beauty','Cosmetics':'Personal Care & Beauty',
+        'Deodorant':'Personal Care & Beauty','Shaving':'Personal Care & Beauty',
+        'Bathroom':'Personal Care & Beauty','Feminine':'Personal Care & Beauty',
+        'Baby skin':'Personal Care & Beauty','Baby food':'Personal Care & Beauty','Baby':'Personal Care & Beauty',
+        'Essential oil':'Essential Oils & Aromatherapy','Incense/aroma':'Essential Oils & Aromatherapy',
+        'Home goods':'Home, Kitchen & Garden','Kitchen':'Home, Kitchen & Garden',
+        'Kitchen gadgets':'Home, Kitchen & Garden','Laundry':'Home, Kitchen & Garden',
+        'Cleaning':'Home, Kitchen & Garden','Disposable':'Home, Kitchen & Garden',
+        'Disposable ':'Home, Kitchen & Garden','Pest control':'Home, Kitchen & Garden',
+        'Empty storage containers':'Home, Kitchen & Garden','Garden seeds':'Home, Kitchen & Garden',
+        'Totes':'Home, Kitchen & Garden','Apparel':'Home, Kitchen & Garden',
+        'Hosiery':'Home, Kitchen & Garden','Jewelry':'Home, Kitchen & Garden',
+        'T-shirt':'Home, Kitchen & Garden','Toys':'Home, Kitchen & Garden',
+        'Travel lunch':'Home, Kitchen & Garden','Pet Food':'Home, Kitchen & Garden',
+        'Pet Care':'Home, Kitchen & Garden','Pet':'Home, Kitchen & Garden',
+        'Fresh':'Fresh Produce','Fresh fruit':'Fresh Produce',
+    };
+
+    // ── State ────────────────────────────────────────────────────────────────
+    let inventoryData = [];
+    let posCategories = {};   // categoryName → parentName from Lightspeed
+    let currentMode   = 'current';
+    let currentPage   = 1;
+    let currentFiltered = [];
+    let fetchedAt     = null;
+
+    const loadingEl      = document.getElementById('loading');
+    const tableEl        = document.getElementById('inventory-table');
+    const tableBodyEl    = document.getElementById('inventory-body');
+    const searchInput    = document.getElementById('product-search');
+    const categoryFilter = document.getElementById('category-filter');
+    const stockFilter    = document.getElementById('stock-filter');
+    const lastUpdatedEl  = document.getElementById('last-updated');
+
+    // ── Boot ─────────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            const [csvText, syncTime, catMap] = await Promise.all([
+                fetch(TEST_API_URL + '?file=' + TEST_INVENTORY_FILE).then(r => r.text()),
+                fetchSyncTime(),
+                fetchPosCategories()
+            ]);
+
+            fetchedAt     = syncTime || new Date();
+            posCategories = catMap;
+            inventoryData = parseCSV(csvText);
+
+            buildComparePanels();
+            applyMode('current');
+            setupFilters();
+
+            loadingEl.style.display = 'none';
+            tableEl.style.display   = 'table';
+        } catch (err) {
+            loadingEl.innerHTML = '<p style="color:var(--color-brick)">Error loading data: ' + err.message + '</p>';
+        }
+    });
+
+    // ── Mode switching ────────────────────────────────────────────────────────
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('btn-current').classList.toggle('active', mode === 'current');
+        document.getElementById('btn-pos').classList.toggle('active', mode === 'pos');
+        document.getElementById('dept-mode-label').textContent =
+            mode === 'current' ? '(DEPARTMENT_MAP)' : '(POS hierarchy)';
+        applyMode(mode);
+    }
+
+    function applyMode(mode) {
+        populateCategories(mode);
+        filterProducts();
+    }
+
+    // ── Department mapping ────────────────────────────────────────────────────
+    function mapDept(rawDept, mode) {
+        var trimmed = (rawDept || '').trim();
+        if (mode === 'current') {
+            return DEPARTMENT_MAP[trimmed] || DEPARTMENT_MAP[rawDept] || trimmed;
+        }
+        // POS mode: use parent category from Lightspeed, fall back to raw
+        return posCategories[trimmed] || posCategories[rawDept] || trimmed;
+    }
+
+    // ── Comparison panel ──────────────────────────────────────────────────────
+    function buildComparePanels() {
+        var currentDepts = [...new Set(inventoryData.map(p =>
+            mapDept(p.department, 'current')))].sort();
+        var posDepts = [...new Set(inventoryData.map(p =>
+            mapDept(p.department, 'pos')))].sort();
+
+        document.getElementById('list-current').innerHTML =
+            currentDepts.map(d => '<li>' + escapeHtml(d) + '</li>').join('');
+        document.getElementById('list-pos').innerHTML =
+            posDepts.map(d => '<li>' + escapeHtml(d) + '</li>').join('');
+    }
+
+    // ── Filter population ─────────────────────────────────────────────────────
+    function populateCategories(mode) {
+        var depts = [...new Set(inventoryData.map(p => mapDept(p.department, mode)))].sort();
+        categoryFilter.innerHTML = '<option value="">All Departments</option>';
+        depts.forEach(function(d) {
+            var opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            categoryFilter.appendChild(opt);
+        });
+    }
+
+    function setupFilters() {
+        searchInput.addEventListener('input', filterProducts);
+        categoryFilter.addEventListener('change', filterProducts);
+        stockFilter.addEventListener('change', filterProducts);
+    }
+
+    function filterProducts() {
+        var term    = searchInput.value.toLowerCase().trim();
+        var selCat  = categoryFilter.value;
+        var selStock= stockFilter.value;
+
+        var filtered = inventoryData;
+
+        if (term) {
+            filtered = filtered.filter(function(p) {
+                return (p.name || '').toLowerCase().includes(term) ||
+                       mapDept(p.department, currentMode).toLowerCase().includes(term);
+            });
+        }
+        if (selCat) {
+            filtered = filtered.filter(function(p) {
+                return mapDept(p.department, currentMode) === selCat;
+            });
+        }
+        if (selStock) {
+            filtered = filtered.filter(function(p) {
+                return getStockStatus(p.quantity).class === selStock;
+            });
+        }
+
+        renderInventory(filtered);
+    }
+
+    // ── Rendering ─────────────────────────────────────────────────────────────
+    function renderInventory(products) {
+        currentFiltered = (products || []).filter(p => p.quantity > 0);
+        currentPage = 1;
+        renderPage();
+    }
+
+    function renderPage() {
+        tableBodyEl.innerHTML = '';
+        var total      = currentFiltered.length;
+        var totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        if (total === 0) {
+            tableBodyEl.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem">No products found.</td></tr>';
+            renderPagination(0);
+            setLastUpdated('Showing 0 of ' + inventoryData.length + ' products');
+            return;
+        }
+
+        var start = (currentPage - 1) * ITEMS_PER_PAGE;
+        var end   = Math.min(start + ITEMS_PER_PAGE, total);
+
+        currentFiltered.slice(start, end).forEach(function(p) {
+            var row = document.createElement('tr');
+            row.innerHTML =
+                '<td><strong>' + escapeHtml(p.name) + '</strong></td>' +
+                '<td>' + escapeHtml(mapDept(p.department, currentMode)) + '</td>' +
+                '<td>' + p.quantity + '</td>' +
+                '<td>' + formatPrice(p.price) + '</td>';
+            tableBodyEl.appendChild(row);
+        });
+
+        renderPagination(total);
+        setLastUpdated('Showing ' + (start + 1) + '–' + end + ' of ' + inventoryData.length + ' products');
+    }
+
+    function renderPagination(total) {
+        var container  = document.getElementById('pagination-controls');
+        var totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+        container.innerHTML = '';
+
+        var prev = document.createElement('button');
+        prev.className = 'btn btn-sm';
+        prev.textContent = 'Prev';
+        prev.disabled = currentPage <= 1;
+        prev.addEventListener('click', function() {
+            currentPage--; renderPage();
+            document.querySelector('.inventory-table-wrapper').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        var info = document.createElement('div');
+        info.className = 'pagination-info';
+        info.textContent = 'Page ' + currentPage + ' of ' + totalPages;
+
+        var next = document.createElement('button');
+        next.className = 'btn btn-sm';
+        next.textContent = 'Next';
+        next.disabled = currentPage >= totalPages;
+        next.addEventListener('click', function() {
+            currentPage++; renderPage();
+            document.querySelector('.inventory-table-wrapper').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        container.appendChild(prev);
+        container.appendChild(info);
+        container.appendChild(next);
+    }
+
+    function setLastUpdated(countText) {
+        if (!lastUpdatedEl) return;
+        var ts = '';
+        var stale = false;
+        if (fetchedAt) {
+            ts = 'Last refreshed: ' + fetchedAt.toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric'
+            }) + ' at ' + fetchedAt.toLocaleTimeString('en-US', {
+                hour: 'numeric', minute: '2-digit'
+            }) + ' · ';
+            stale = (Date.now() - fetchedAt.getTime()) > 2 * 60 * 60 * 1000;
+        }
+        lastUpdatedEl.textContent = ts + countText;
+        if (stale) lastUpdatedEl.style.color = 'var(--color-brick, #b94a2c)';
+    }
+
+    // ── Data fetching ─────────────────────────────────────────────────────────
+    async function fetchSyncTime() {
+        try {
+            var r     = await fetch(TEST_API_URL + '?action=list');
+            var files = JSON.parse(await r.text());
+            var entry = files.find(function(f) { return f.name === TEST_INVENTORY_FILE; });
+            return entry ? new Date(entry.lastModified) : null;
+        } catch(e) { return null; }
+    }
+
+    async function fetchPosCategories() {
+        try {
+            var r = await fetch(TEST_API_URL + '?action=categories');
+            if (!r.ok) return {};
+            return await r.json();
+        } catch(e) { return {}; }
+    }
+
+    // ── Parsing / helpers ─────────────────────────────────────────────────────
+    function parseCSV(text) {
+        var lines    = text.trim().split('\n');
+        var products = [];
+        for (var i = 1; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (!line) continue;
+            var parts = line.split(',');
+            if (parts.length >= 5 && parts[1].trim()) {
+                products.push({
+                    upc:        parts[0].trim(),
+                    name:       parts[1].trim().replace(/^"|"$/g, '').replace(/""/g, '"'),
+                    department: parts[2].trim(),
+                    quantity:   parseInt(parts[3].trim()) || 0,
+                    price:      parseFloat((parts[4].trim()).replace(/[^0-9.]/g, '')) || 0
+                });
+            }
+        }
+        return products;
+    }
+
+    function getStockStatus(qty) {
+        if (qty <= 0)                   return { class: 'out-of-stock' };
+        if (qty <= LOW_STOCK_THRESHOLD) return { class: 'low-stock' };
+        return { class: 'in-stock' };
+    }
+
+    function formatPrice(price) {
+        return '$' + Number(price || 0).toFixed(2);
+    }
+
+    function escapeHtml(text) {
+        var d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+    </script>
+</body>
+</html>

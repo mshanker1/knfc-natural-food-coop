@@ -66,6 +66,10 @@ function doGet(e) {
       return createResponse(handleConsolidateRequest(fname), 200, 'text/plain');
     }
 
+    if (action === 'categories') {
+      return createResponse(JSON.stringify(fetchLightspeedCategories()), 200, 'application/json');
+    }
+
     if (action === 'lightspeed-sync') {
       var syncSecret = PropertiesService.getScriptProperties().getProperty('SYNC_SECRET');
       if (syncSecret && params.token !== syncSecret) {
@@ -410,6 +414,36 @@ function debugItem() {
   var relations = encodeURIComponent('["Category","ItemShops"]');
   var data      = lsApiGet(accountId + '/Item.json?load_relations=' + relations + '&limit=1');
   Logger.log(JSON.stringify(data, null, 2));
+}
+
+/**
+ * Fetch all Lightspeed categories and return a map of
+ * categoryName → parentCategoryName (or itself if top-level).
+ * Used by the ?action=categories endpoint for the test page.
+ */
+function fetchLightspeedCategories() {
+  var accountId = PropertiesService.getScriptProperties().getProperty('LS_ACCOUNT_ID');
+  if (!accountId) throw new Error('Not authorized. Complete Lightspeed OAuth setup first.');
+
+  var data = lsApiGet(accountId + '/Category.json?limit=200');
+  var cats = data.Category;
+  if (!cats) return {};
+  if (!Array.isArray(cats)) cats = [cats];
+
+  // Build id → {name, parentId} lookup
+  var byId = {};
+  cats.forEach(function(c) {
+    byId[c.categoryID] = { name: c.name, parentId: c.parentID || null };
+  });
+
+  // Return categoryName → parentName (top-level categories map to themselves)
+  var result = {};
+  cats.forEach(function(c) {
+    var parent = (c.parentID && byId[c.parentID]) ? byId[c.parentID].name : c.name;
+    result[c.name] = parent;
+  });
+
+  return result;
 }
 
 /**
