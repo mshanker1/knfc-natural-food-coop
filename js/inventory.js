@@ -542,7 +542,7 @@ function renderPage() {
 
     if (!currentFilteredProducts || currentFilteredProducts.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="4" style="text-align: center; padding: 2rem;">No products found matching your search.</td>';
+        row.innerHTML = '<td colspan="3" style="text-align: center; padding: 2rem;">No products found matching your search.</td>';
         tableBodyEl.appendChild(row);
         renderPaginationControls();
         setLastUpdated('Showing 0 of ' + inventoryData.length + ' products');
@@ -569,7 +569,6 @@ function renderPage() {
             <td><strong>${escapeHtml(name)}</strong></td>
             <td>${escapeHtml(department)}</td>
             <td>${quantity}</td>
-            <td>${formatPrice(price)}</td>
         `;
 
         tableBodyEl.appendChild(row);
