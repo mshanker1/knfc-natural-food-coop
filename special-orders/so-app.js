@@ -12,7 +12,25 @@
   const fdate = s => !s ? '' : new Date(s + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
   const today = () => new Date().toISOString().slice(0,10);
 
-  let view = { tab:'intake', openId:null, draft:null, pickupQuery:'', search:'' };
+  let view = { tab:'intake', openId:null, draft:null, pickupQuery:'', search:'', costRaw:null,
+               buyerVendor:'', buyerQuery:'', recvQuery:'' };
+
+  const VENDORS = ['Kehe','UNFI','Frankferd Farms','Other distributor'];
+  function matches(o,q){
+    if (!q) return true;
+    return (o.customer.name+' '+o.item.product+' '+o.item.brand+' '+o.id+' '+(o.item.vendor||'')+' '+(o.item.catalog||''))
+      .toLowerCase().includes(q.toLowerCase());
+  }
+  function vendorFilter(list, vendor, q){
+    return list.filter(o => (!vendor || o.item.vendor===vendor) && matches(o,q));
+  }
+  /* vendor buttons show live counts so a buyer can see at a glance
+     whether there's anything worth sending to that distributor */
+  function vendorBar(list, active, attr){
+    const counts = {}; list.forEach(o=>{ const v=o.item.vendor||'—'; counts[v]=(counts[v]||0)+1; });
+    const btn = (val,label,n)=>`<button class="vfilter ${active===val?'on':''}" data-${attr}="${esc(val)}">${esc(label)}<span class="vn">${n}</span></button>`;
+    return `<div class="vbar">${btn('','All vendors',list.length)}${VENDORS.map(v=>btn(v,v,counts[v]||0)).join('')}</div>`;
+  }
 
   /* ── tabs ─────────────────────────────────────────── */
   const TABS = [
@@ -85,7 +103,7 @@
     <div class="screen-head">
       <div class="eyebrow">Counter staff · step 1</div>
       <h1>Take a special order</h1>
-      <p>Everything on the front of the paper slip, in one place. The order number is generated here — it's what goes on the tag and what the register looks up later.</p>
+      <p>Everything on the front of the paper slip, in one place. The order number generated here is the fallback — what the register actually reads is the customer's name and the amount owed, written on the tag at receiving.</p>
     </div>
 
     <div class="card">
@@ -196,37 +214,58 @@
 
   /* ── SCREEN: buyer ────────────────────────────────── */
   function screenBuyer(){
-    const req = D.byStatus('requested'), ord = D.byStatus('ordered');
+    const allReq = D.byStatus('requested'), allOrd = D.byStatus('ordered');
+    const v = view.buyerVendor, q = view.buyerQuery;
+    const req = vendorFilter(allReq, v, q), ord = vendorFilter(allOrd, v, q);
+    const label = v || 'all vendors';
     return `
     <div class="screen-head">
       <div class="eyebrow">Buyer</div>
       <h1>Buyer queue</h1>
-      <p>Two touches, same as the paper slip: log the date you placed it, then price it once the invoice arrives. No cost or markup guessing beforehand.</p>
+      <p>Pick the distributor you're about to send an order to and you'll see only what belongs on that order. Two touches after that, same as the paper slip: log the date you placed it, then price it once the invoice arrives.</p>
+    </div>
+    <div class="card filterbar">
+      <div class="dl">Filter by distributor</div>
+      ${vendorBar(allReq.concat(allOrd), v, 'bvendor')}
+      <div class="searchrow" style="margin-top:12px">
+        <div class="field"><label>Search within these</label><input id="bq" value="${esc(q)}" placeholder="product, customer, catalog #" autocomplete="off" /></div>
+        ${(v||q)?`<button class="btn ghost sm" data-bclear="1">Clear filters</button>`:''}
+      </div>
     </div>
     <div class="card">
       <h3>Waiting to be placed <span class="mono" style="font-size:14px;color:var(--gray)">(${req.length})</span></h3>
-      <div class="sub">Mark these as ordered when they go out to the distributor.</div>
-      ${rowsOr(req,'Nothing waiting','Every requested order has been placed.')}
+      <div class="sub">This is your ${esc(label)} order list. Mark each one placed as it goes out.</div>
+      ${rowsOr(req,'Nothing waiting for '+label,'Nothing to send to this distributor right now.')}
     </div>
     <div class="card">
       <h3>Placed, waiting to arrive <span class="mono" style="font-size:14px;color:var(--gray)">(${ord.length})</span></h3>
       <div class="sub">Price these from the invoice once they land. Openable from home.</div>
-      ${rowsOr(ord,'Nothing outstanding','No orders are out with distributors.')}
+      ${rowsOr(ord,'Nothing outstanding','No orders are out with this distributor.')}
     </div>`;
   }
 
   /* ── SCREEN: receiving ────────────────────────────── */
   function screenReceive(){
-    const ord = D.byStatus('ordered'), rec = D.byStatus('received');
+    const allOrd = D.byStatus('ordered'), allRec = D.byStatus('received');
+    const v = view.recvVendor||'', q = view.recvQuery;
+    const ord = vendorFilter(allOrd, v, q), rec = vendorFilter(allRec, v, q);
     return `
     <div class="screen-head">
       <div class="eyebrow">Receiving</div>
       <h1>Goods received</h1>
-      <p>Open an order when the shipment lands, enter the wholesale cost from the invoice, and the price is worked out for you. Write the order number on the tag and attach it to the item.</p>
+      <p>Filter to the shipment that just landed, open each order, and enter the wholesale cost from the invoice. The price works itself out — then write the customer's name and what they owe on the tag.</p>
+    </div>
+    <div class="card filterbar">
+      <div class="dl">Filter by distributor</div>
+      ${vendorBar(allOrd.concat(allRec), v, 'rvendor')}
+      <div class="searchrow" style="margin-top:12px">
+        <div class="field"><label>Search within these</label><input id="rq" value="${esc(q)}" placeholder="product, customer, order #" autocomplete="off" /></div>
+        ${(v||q)?`<button class="btn ghost sm" data-rclear="1">Clear filters</button>`:''}
+      </div>
     </div>
     <div class="card">
       <h3>Arriving <span class="mono" style="font-size:14px;color:var(--gray)">(${ord.length})</span></h3>
-      ${rowsOr(ord,'Nothing on the way','No placed orders are outstanding.')}
+      ${rowsOr(ord,'Nothing on the way','No placed orders match this filter.')}
     </div>
     <div class="card">
       <h3>Received, not yet collected <span class="mono" style="font-size:14px;color:var(--gray)">(${rec.length})</span></h3>
@@ -242,7 +281,7 @@
     <div class="screen-head">
       <div class="eyebrow">Counter staff · at the register</div>
       <h1>Pickup</h1>
-      <p>Type the number off the tag, or the customer's name or phone. What's owed shows up straight away.</p>
+      <p>The tag on the item already says the name and what's owed, so most pickups never need this screen. It's here for when the tag is missing, the price changed after receiving, or you need to check what someone still has waiting.</p>
     </div>
     <div class="card">
       <div class="field"><label>Order number, name, or phone</label><input id="pq" value="${esc(q)}" placeholder="10482, Rourke, 0148…" autocomplete="off" /></div>
@@ -294,7 +333,7 @@
     </div>
     <div class="card">
       <h3>Department markups</h3>
-      <div class="sub">Used for every single-item order, and as the basis for nonmember case/bulk pricing (minus ${P.NONMEMBER_REDUCTION} points).</div>
+      <div class="sub">Set when the co-op started in 1992, a few changed since — buyers don't set these. Used for every single-item order, and as the basis for nonmember case/bulk pricing (minus ${P.NONMEMBER_REDUCTION} points).</div>
       <table><thead><tr><th>Department</th><th>Normal markup</th><th>Nonmember case/bulk</th><th></th></tr></thead><tbody>
         ${P.DEPARTMENTS.map(x=>`<tr>
           <td>${esc(x.label)}</td>
@@ -303,7 +342,7 @@
           <td>${x.confirmed?'<span class="chip member">confirmed</span>':'<span class="chip warn">needs confirming</span>'}</td>
         </tr>`).join('')}
       </tbody></table>
-      <div class="tf-note">Only bulk herbs, packaged goods, and packaged health &amp; beauty were confirmed by name. The rest are placeholders — a buyer needs to fill in the real numbers before go-live.</div>
+      <div class="tf-note"><b>Departments are fluid.</b> A lot of things people would call packaged actually live somewhere else — some cookies are in packaged rather than chips &amp; cookies, Crumbs cookies take the 40% bread markup, planting seeds and some herbs are in packaged, mayo and dressings are packaged unless they're in the walk-in. The only way to be sure is to scan the item and see what department the POS reports, then pick that one here.</div>
     </div>
     <div class="card">
       <h3>Staff orders</h3>
@@ -413,16 +452,19 @@
     ${(o.status==='received'||o.status==='notified')&&price!=null?`
     <div class="card">
       <h3>Tag for the item</h3>
-      <div class="sub">Write this number on a reusable card and attach it to the item. Just the number — the price lives in the system, where it stays current even if it changes.</div>
+      <div class="sub">Copy this onto the tag and attach it to the item. Name and amount owed go on the front — that's what the register needs, so nobody at the counter has to look anything up while a line builds.</div>
       <div class="tagwrap">
         <div class="tagcard">
           <div class="hole"></div>
           <div class="tl">Special Order</div>
-          <div class="tn">${o.id}</div>
-          <div class="tf">${esc(o.customer.name)}</div>
+          <div class="tname">${esc(o.customer.name)}</div>
+          <div class="tdue ${bal<0?'refund':bal>0?'due':'settled'}">${bal===0?'Paid in full':money(Math.abs(bal))}<span>${bal<0?'refund owed':bal>0?'due':'nothing owed'}</span></div>
+          <div class="titem">${esc(o.item.product)}${o.item.size?' · '+esc(o.item.size):''}</div>
+          <div class="tf">Order <span class="mono">#${o.id}</span></div>
         </div>
-        <div style="flex:1;min-width:220px">
-          <div class="note info" style="margin-top:0"><b>Why only the number</b>One number is far harder to miscopy than five fields, and nothing has to be rewritten if the price changes after receiving.</div>
+        <div style="flex:1;min-width:230px">
+          <div class="note info" style="margin-top:0"><b>Name and amount, written at receiving</b>Whoever puts the order away already has the price on screen, so they write it once. At the register it's grab-and-ring — no lookup, no hunting for a matching number.</div>
+          <div class="note warn" style="margin-bottom:0"><b>If the price changes after this</b>The system is still the final word. The order number on the tag is how you find it if the two ever disagree.</div>
         </div>
       </div>
     </div>`:''}`;
@@ -459,7 +501,7 @@
   app.addEventListener('click', e=>{
     const t = e.target;
     const open = t.closest('[data-open]');
-    if (open){ view.openId = Number(open.dataset.open); render(); window.scrollTo(0,0); return; }
+    if (open){ view.openId = Number(open.dataset.open); view.costRaw = null; render(); window.scrollTo(0,0); return; }
     if (t.closest('[data-back]')){ e.preventDefault(); view.openId = null; render(); return; }
 
     const seg = t.closest('[data-set]');
@@ -483,6 +525,12 @@
       Object.assign(view.draft.item,{product:it.name,department:it.department});
       view.draft.itemQuery=''; render(); return;
     }
+    const bv = t.closest('[data-bvendor]');
+    if (bv){ view.buyerVendor = bv.dataset.bvendor; render(); return; }
+    const rv = t.closest('[data-rvendor]');
+    if (rv){ view.recvVendor = rv.dataset.rvendor; render(); return; }
+    if (t.closest('[data-bclear]')){ view.buyerVendor=''; view.buyerQuery=''; render(); return; }
+    if (t.closest('[data-rclear]')){ view.recvVendor=''; view.recvQuery=''; render(); return; }
     if (t.closest('[data-reset]')){ view.draft = blankDraft(); render(); return; }
     if (t.closest('[data-resetdemo]')){ D.resetDemo(); view.openId=null; render(); return; }
     if (t.closest('[data-save]')){ saveDraft(); return; }
@@ -525,7 +573,10 @@
     const id = e.target.id, v = e.target.value, d = view.draft;
     if (id==='pq'){ view.pickupQuery=v; debouncedRender(); return; }
     if (id==='sq'){ view.search=v; debouncedRender(); return; }
+    if (id==='bq'){ view.buyerQuery=v; debouncedRender(); return; }
+    if (id==='rq'){ view.recvQuery=v; debouncedRender(); return; }
     if (id==='cost'){
+      view.costRaw = v;
       const n = parseFloat(v);
       D.update(view.openId,{ actualCost: isNaN(n)?null:n });
       debouncedRender(); return;
@@ -553,7 +604,13 @@
       render();
       if (lastFocus && lastFocus.id){
         const el = app.querySelector('#'+lastFocus.id);
-        if (el){ el.focus(); try{ el.setSelectionRange(lastFocus.pos,lastFocus.pos); }catch(e){} }
+        if (el){
+          /* keep exactly what was typed — re-printing the parsed number
+             would eat a trailing decimal point mid-entry ("20." -> "20") */
+          if (lastFocus.id==='cost' && view.costRaw!=null) el.value = view.costRaw;
+          el.focus();
+          try{ el.setSelectionRange(lastFocus.pos,lastFocus.pos); }catch(e){}
+        }
       }
     }, 220);
   }

@@ -141,6 +141,18 @@ fieldset legend{font-family:var(--f-mono);font-size:10px;letter-spacing:.11em;te
 .tagcard .hole{width:14px;height:14px;border:2px solid var(--gray-light);border-radius:50%;margin:0 auto 8px;background:var(--paper)}
 .tagcard .tl{font-family:var(--f-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--rust)}
 .tagcard .tn{font-family:var(--f-mono);font-size:38px;font-weight:500;letter-spacing:.05em;margin:2px 0 6px}
+.tagcard .tname{font-size:21px;font-weight:600;line-height:1.15;margin:5px 0 8px}
+.tagcard .tdue{font-family:var(--f-mono);font-size:34px;font-weight:600;color:var(--maroon);line-height:1;margin-bottom:9px}
+.tagcard .tdue.refund{color:#1d6b4f}
+.tagcard .tdue.settled{font-size:19px;color:var(--gray-dark)}
+.tagcard .tdue span{display:block;font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-top:5px}
+.tagcard .titem{font-size:12px;color:var(--gray-dark);line-height:1.35;padding-bottom:8px}
+.vbar{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
+.vfilter{display:flex;align-items:center;gap:7px;font:inherit;font-size:13px;padding:7px 12px;border:1px solid var(--rule);border-radius:20px;background:var(--white);color:var(--gray-dark);cursor:pointer}
+.vfilter:hover{border-color:var(--gray-light);color:var(--ink)}
+.vfilter.on{background:var(--maroon);border-color:var(--maroon);color:var(--white)}
+.vfilter .vn{font-family:var(--f-mono);font-size:11.5px;opacity:.65}
+.filterbar{padding-bottom:16px}
 .tagcard .tf{font-size:11.5px;color:var(--gray-dark);border-top:1px dashed var(--gray-light);padding-top:7px}
 
 /* ── rate table ─────────────────────────────────────── */

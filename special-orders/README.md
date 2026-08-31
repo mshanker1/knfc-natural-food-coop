@@ -20,7 +20,7 @@ knfc-website/
     └── so-app.js
 ```
 
-Commit and push. It goes live at `<your-domain>/special-orders/`.
+Commit and push. It goes live at `https://kentnaturalfoods.org/special-orders/`.
 
 Nothing needs to be added to the nav, and nothing in the existing site
 changes — this folder is entirely self-contained. It loads only Google

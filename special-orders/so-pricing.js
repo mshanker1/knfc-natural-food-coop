@@ -28,17 +28,27 @@
 
   /* Department retail markup — the store's normal markup for that department.
      Used for (a) all single-item orders, (b) nonmember case/bulk minus 10.
-     Only the three Elizabeth named are confirmed; the rest are placeholders
-     and are flagged in the UI until someone confirms them. */
+     Set in 1992 at founding; a few have changed since. Confirmed in full by
+     Elizabeth, Aug 2026 — buyers do not set these.
+     Departments are FLUID: an item's real department is whatever the POS says
+     when you scan it, not what it looks like. Scan first, then pick here. */
   const DEPARTMENTS = [
-    { dept: 'Bulk_Herbs',   label: 'Bulk herbs',            pct: 100, confirmed: true },
-    { dept: 'Packaged_Dry', label: 'Packaged goods',        pct: 55,  confirmed: true },
-    { dept: 'Packaged_HB',  label: 'Packaged health/beauty',pct: 75,  confirmed: true },
-    { dept: 'Bulk_Dry',     label: 'Bulk dry goods',        pct: 55,  confirmed: false },
-    { dept: 'Vitamins',     label: 'Vitamins',              pct: 75,  confirmed: false },
-    { dept: 'Beverage',     label: 'Beverage',              pct: 55,  confirmed: false },
-    { dept: 'Frozen',       label: 'Frozen',                pct: 55,  confirmed: false },
-    { dept: 'Milk',         label: 'Dairy / milk',          pct: 40,  confirmed: false }
+    { dept: 'Bulk_Herbs',   label: 'Bulk herbs (+ some packaged herbs)', pct: 100, confirmed: true },
+    { dept: 'Vitamins',     label: 'Vitamins / tinctures / some CBD',    pct: 100, confirmed: true },
+    { dept: 'Packaged_HB',  label: 'Packaged health & beauty',           pct: 75,  confirmed: true },
+    { dept: 'Bulk_Dry',     label: 'Bulk / handpacked',                  pct: 65,  confirmed: true },
+    { dept: 'Packaged_Dry', label: 'Packaged dry',                       pct: 55,  confirmed: true },
+    { dept: 'Bulk_HB',      label: 'Bulk health & beauty / household',   pct: 55,  confirmed: true },
+    { dept: 'Beverage',     label: 'Beverages (incl. aseptic milks)',    pct: 55,  confirmed: true },
+    { dept: 'Frozen',       label: 'Frozen (not meat, bread, or treats)',pct: 55,  confirmed: true },
+    { dept: 'Refrigerated', label: 'Refrigerated',                       pct: 55,  confirmed: true },
+    { dept: 'Chips_Cookies',label: 'Chips & cookies',                    pct: 55,  confirmed: true },
+    { dept: 'Coffee',       label: 'Coffee (bulk & packaged)',           pct: 55,  confirmed: true },
+    { dept: 'Consignment',  label: 'Consignment',                        pct: 50,  confirmed: true },
+    { dept: 'Produce',      label: 'Produce',                            pct: 45,  confirmed: true },
+    { dept: 'Bread',        label: 'Bread (incl. frozen bread, Crumbs)', pct: 40,  confirmed: true },
+    { dept: 'Milk',         label: 'Milk / dairy cooler',                pct: 40,  confirmed: true },
+    { dept: 'Meat',         label: 'Meat & jerky',                       pct: 40,  confirmed: true }
   ];
 
   const NONMEMBER_REDUCTION = 10;  /* points off the department markup */
