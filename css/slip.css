@@ -1,0 +1,114 @@
+/* =====================================================
+   KNFC — Special Order Slip (staff tool)
+   Loads after css/styles.css and uses its tokens. The card itself is
+   deliberately plain: it's the paper slip typed, not a redesign of it.
+   ===================================================== */
+
+.slip-tool{--line:var(--color-gray-light);--f-type:var(--font-mono)}
+.slip-tool .wrap{max-width:940px;margin:0 auto}
+
+/* ── staff bar ─────────────────────────────────────── */
+.slip-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px}
+.whobox{display:flex;align-items:center;gap:8px;font-family:var(--font-body);font-size:13px;color:var(--color-gray)}
+.whobox label{letter-spacing:.06em;text-transform:uppercase}
+.whobox select{width:auto;min-width:150px;font-family:var(--font-body);font-size:14px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:7px 9px;background:var(--color-white);color:var(--color-ink)}
+
+/* ── tabs ──────────────────────────────────────────── */
+.slip-tool .tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--color-rule);margin-bottom:26px}
+.slip-tool .tab{font-family:var(--font-body);font-size:14px;padding:11px 17px;background:none;border:none;border-bottom:2px solid transparent;color:var(--color-gray);cursor:pointer;margin-bottom:-1px;transition:color var(--transition-fast)}
+.slip-tool .tab:hover{color:var(--color-ink)}
+.slip-tool .tab.on{color:var(--color-maroon);border-bottom-color:var(--color-maroon);font-weight:600}
+.slip-tool .tab .n{font-family:var(--f-type);font-size:12px;color:var(--color-gray);margin-left:7px}
+
+/* ── the card ──────────────────────────────────────── */
+.slip{background:var(--color-white);border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);padding:28px 30px 24px;font-family:var(--f-type);color:var(--color-ink)}
+.memb{display:flex;justify-content:flex-end;align-items:baseline;gap:10px;margin-bottom:16px}
+.memb label{font-size:14px}
+/* Each printed line on the card: a label, then a rule you write on. */
+.ln{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 10px;margin-bottom:14px}
+.ln>label{font-size:14px;white-space:nowrap;color:var(--color-gray-dark)}
+.ln .fill{flex:1 1 120px;min-width:90px}
+.ln .fill.sm{flex:0 1 108px;min-width:70px}
+.ln .fill.md{flex:0 1 190px;min-width:120px}
+.slip input[type=text],.slip input[type=date],.slip input[type=number],.slip textarea,.slip select{font-family:var(--f-type);font-size:15px;color:var(--color-ink);width:100%;background:none;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:2px 3px 3px}
+.slip input:focus,.slip textarea:focus{outline:none;border-bottom-color:var(--color-maroon);background:oklch(0.98 0.02 85)}
+.slip input[type=date]{font-size:14px}
+.slip textarea{resize:vertical;min-height:2.6em;border:1px solid var(--line);border-radius:var(--radius-sm);padding:7px 8px}
+.slip input:disabled,.slip textarea:disabled{color:var(--color-gray);cursor:not-allowed}
+.buyerbar{font-family:var(--f-type);font-size:13.5px;font-weight:500;letter-spacing:.22em;text-align:center;text-transform:uppercase;color:var(--color-maroon);border-top:1px solid var(--color-maroon);border-bottom:1px solid var(--color-maroon);padding:8px 0;margin:24px 0 20px}
+
+/* ── who's allowed to write in the buyer half ──────── */
+.lockbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-family:var(--font-body);font-size:13.5px;color:var(--color-gray-dark);background:var(--color-cream);border:1px solid var(--color-rule);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:18px}
+.lockbar select{width:auto;min-width:160px;font-family:var(--font-body);font-size:14px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:7px 9px;background:var(--color-white)}
+.locked{opacity:.55}
+.locked input,.locked textarea{border-bottom-style:dashed}
+.warn-t{color:var(--color-brick);font-family:var(--font-body);font-size:13px}
+
+/* ── back-of-card ledger ───────────────────────────── */
+.back{margin-top:28px;border-top:1px dashed var(--line);padding-top:20px}
+.back h3{font-family:var(--f-type);font-size:13.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin:0 0 3px;color:var(--color-ink)}
+.back .hint{font-family:var(--font-body);font-size:13px;color:var(--color-gray);margin:0 0 13px}
+table.led{width:100%;border-collapse:collapse;font-family:var(--f-type)}
+table.led th{font-family:var(--font-body);font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;text-align:left;color:var(--color-gray-dark);border-bottom:1px solid var(--color-ink);padding:0 8px 7px}
+table.led td{border:1px solid var(--color-rule);border-top:none;padding:0}
+table.led td input{border:none;padding:9px 8px}
+table.led td input:focus{background:oklch(0.98 0.02 85)}
+table.led tr td:first-child{border-left:none}
+table.led tr td:last-child{border-right:none}
+
+/* ── pickup + provenance ───────────────────────────── */
+.pickrow{margin-top:22px;border-top:1px solid var(--color-rule);padding-top:15px}
+.pickrow label{display:flex;align-items:center;gap:9px;font-family:var(--f-type);font-size:14px;cursor:pointer}
+.pickrow input{width:17px;height:17px;accent-color:var(--color-maroon)}
+.pickrow .qt{color:var(--color-gray)}
+.stamp{font-family:var(--font-body);font-size:12px;color:var(--color-gray);margin:20px 0 0;padding-top:13px;border-top:1px solid var(--color-rule)}
+
+/* ── list of slips ─────────────────────────────────── */
+.searchrow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:18px}
+.searchrow .f{flex:1 1 260px}
+.searchrow label{display:block;font-family:var(--font-body);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-gray);margin-bottom:5px}
+.searchrow input{width:100%;font-family:var(--font-body);font-size:15px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 10px;background:var(--color-white);color:var(--color-ink)}
+.searchrow input:focus{outline:none;border-color:var(--color-maroon)}
+.rows{border-top:1px solid var(--color-rule)}
+.slip-tool .row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.5fr) auto;gap:6px 18px;align-items:center;width:100%;text-align:left;font-family:var(--font-body);background:none;border:none;border-bottom:1px solid var(--color-rule);padding:14px 6px;cursor:pointer;transition:background var(--transition-fast)}
+.slip-tool .row:hover{background:var(--color-cream)}
+.row .who{display:block;font-weight:600;color:var(--color-ink)}
+.row .meta{display:block;font-family:var(--f-type);font-size:12.5px;color:var(--color-gray);margin-top:3px}
+.row .what{display:block;font-size:14.5px;color:var(--color-ink)}
+.row .sub{display:block;font-family:var(--f-type);font-size:12.5px;color:var(--color-gray);margin-top:3px}
+.row .stat{font-family:var(--f-type);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--color-gray);white-space:nowrap;justify-self:end}
+.slip-tool .empty{padding:36px 6px;font-family:var(--font-body);color:var(--color-gray);font-size:14.5px}
+
+/* ── buttons + notices ─────────────────────────────── */
+.slip-tool .bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:24px}
+.slip-tool .btn{font-family:var(--font-body);font-size:14px;padding:10px 18px;border:1px solid var(--color-maroon);border-radius:var(--radius-sm);background:var(--color-maroon);color:var(--color-white);cursor:pointer;transition:background var(--transition-fast)}
+.slip-tool .btn:hover{background:var(--color-maroon-deep)}
+.slip-tool .btn:disabled{opacity:.45;cursor:not-allowed}
+.slip-tool .btn.ghost{background:none;color:var(--color-maroon)}
+.slip-tool .btn.ghost:hover{background:var(--color-cream)}
+.slip-tool .btn.sm{font-size:13px;padding:7px 13px}
+.saved{font-family:var(--f-type);font-size:13px;color:var(--color-gray)}
+.backlink{font-family:var(--font-body);font-size:14px;background:none;border:none;color:var(--color-maroon);padding:0;margin-bottom:18px;cursor:pointer}
+.backlink:hover{text-decoration:underline}
+.slip-tool .note{font-family:var(--font-body);font-size:13.5px;color:var(--color-gray);border-left:2px solid var(--color-rule);padding:3px 0 3px 13px;margin-top:28px}
+.banner{display:flex;flex-wrap:wrap;align-items:center;gap:11px;font-family:var(--font-body);font-size:14.5px;padding:13px 15px;margin-bottom:20px;border:1px solid var(--color-brick);border-left:4px solid var(--color-brick);border-radius:var(--radius-sm);background:oklch(0.96 0.03 40);color:var(--color-maroon-deep)}
+
+/* ── passcode ──────────────────────────────────────── */
+.gate{max-width:440px;margin:20px auto 60px;background:var(--color-white);border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);padding:28px 30px}
+.gate h2{font-family:var(--font-heading);font-size:24px;margin:0 0 7px;color:var(--color-ink)}
+.gate p{font-family:var(--font-body);font-size:14px;color:var(--color-gray);margin:0 0 20px}
+.gaterow{display:flex;flex-wrap:wrap;gap:11px}
+.gate input{flex:1 1 160px;font-family:var(--font-body);font-size:15px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 11px}
+.gate input:focus{outline:none;border-color:var(--color-maroon)}
+
+@media (max-width:640px){
+  .slip{padding:20px 18px}
+  .slip-tool .row{grid-template-columns:minmax(0,1fr);gap:4px}
+  .row .stat{justify-self:start;margin-top:4px}
+  table.led{font-size:13px}
+}
+@media print{
+  .utility-ribbon,.site-header,.site-footer,.page-header,.slip-toolbar,.tabs,.bar,.backlink,.searchrow,.note,.banner,.lockbar,.pickrow{display:none!important}
+  .slip{border:none;box-shadow:none;padding:0}
+  .locked{opacity:1}
+}
