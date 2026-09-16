@@ -23,7 +23,7 @@
     { k:'comments', label:'comments:',        sec:'front', area:true },
     { k:'vendor',   label:'vendor:',          sec:'buyer', w:'md' },
     { k:'catalog',  label:'catalog #:',       sec:'buyer', w:'md' },
-    { k:'ordered',  label:'date(s) ordered:', sec:'buyer' },
+    { k:'ordered',  label:'date ordered:',    sec:'buyer', w:'md', type:'date' },
     { k:'received', label:"date rcv'd:",      sec:'buyer', w:'md', type:'date' },
     { k:'notified', label:'when notified:',   sec:'buyer', w:'md' },
     { k:'price',    label:'price:',           sec:'buyer', w:'md' },
@@ -62,9 +62,17 @@
     if (s.ordered) return 'ordered';
     return 'not yet ordered';
   }
+  /* Parse YYYY-MM-DD as a local date. Date.parse() treats it as UTC, which
+     shows every date a day early in Ohio. */
+  function parseD(d){
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d||'');
+    return m ? new Date(+m[1], +m[2]-1, +m[3]) : null;
+  }
   function daysSince(d){
-    const t = Date.parse(d);
-    return isNaN(t) ? 0 : Math.floor((Date.now() - t) / 86400000);
+    const x = parseD(d);
+    if (!x) return 0;
+    const t = new Date(); t.setHours(0,0,0,0);
+    return Math.max(0, Math.round((t - x) / 86400000));
   }
   /* Tucked away, never deleted: picked up and gone cold, by the age the
      Sheet decides. */
@@ -74,7 +82,7 @@
   }
 
   let st = {
-    tab:'new', openId:null, q:'', draft:blank(), note:'',
+    tab:'new', openId:null, q:'', statusF:'all', from:'', to:'', draft:blank(), note:'',
     slips:[], staff:[], archiveAfterDays:90,
     loading:true, gate:false, gateError:'', unlockBuyer:false, saving:''
   };
@@ -167,20 +175,62 @@
   }
 
   /* ── lists ────────────────────────────────────────────────────────── */
+  /* When something last happened on this slip — the buyer's "has anyone
+     touched it since I looked?" column. */
+  const lastAt = s => (s.updated || s.created || s.date || '').slice(0,10);
+  const shortDate = d => {
+    const x = parseD(d);
+    return x ? `${x.getMonth()+1}/${x.getDate()}/${String(x.getFullYear()).slice(2)}` : '';
+  };
+  const STATUSES = ['not yet ordered','ordered',"rcv'd",'picked up'];
+
+  function ageHTML(s){
+    if (s.pickedUp || s.received) return `<span class="sub">${esc(shortDate(lastAt(s))||'—')}</span>`;
+    const n = daysSince(s.date || s.created);
+    const late = !s.ordered && n >= 7;
+    return `<span class="sub ${late?'late':''}">${n<=0?'today':n===1?'1 day':n+' days'}${s.ordered?' old':' waiting'}</span>`;
+  }
   function rowsHTML(list){
-    if (!list.length) return `<div class="empty">${st.q ? 'No slips match that.' : 'Nothing here yet.'}</div>`;
+    if (!list.length) return `<div class="empty">${(st.q||st.statusF!=='all'||st.from||st.to) ? 'No slips match that.' : 'Nothing here yet.'}</div>`;
     return `<div class="rows">${list.map(s=>`
       <button class="row" data-open="${esc(s.id)}">
         <span><span class="who">${esc(s.name||'(no name)')}</span><span class="meta">${esc(s.phone||'no phone')} &middot; #${esc(s.id)}</span></span>
         <span><span class="what">${esc(s.product||'(no product)')}</span><span class="sub">${[s.brand,s.size,s.quantity&&('qty '+s.quantity)].filter(Boolean).map(esc).join(' &middot; ')||'&mdash;'}</span></span>
-        <span class="stat">${esc(status(s))}</span>
+        <span class="when"><span class="d">${esc(shortDate(s.date)||'—')}</span>${ageHTML(s)}</span>
+        <span class="stat ${status(s)==='not yet ordered'?'todo':''}">${esc(status(s))}</span>
       </button>`).join('')}</div>`;
   }
   function filtered(inArchive){
     const q = st.q.toLowerCase();
-    return st.slips
+    const inRange = s => {
+      const d = (s.date || '').slice(0,10);
+      if (st.from && (!d || d < st.from)) return false;
+      if (st.to && (!d || d > st.to)) return false;
+      return true;
+    };
+    const list = st.slips
       .filter(s => archived(s, st.archiveAfterDays) === inArchive)
+      .filter(s => st.statusF === 'all' || status(s) === st.statusF)
+      .filter(inRange)
       .filter(s => !q || [s.name,s.phone,s.product,s.brand,s.vendor,s.catalog,s.id].join(' ').toLowerCase().includes(q));
+    /* Waiting to be placed sorts oldest first — that's the work queue.
+       Everything else sorts by whatever happened most recently. */
+    return st.statusF === 'not yet ordered'
+      ? list.sort((a,b) => (a.date||'').localeCompare(b.date||''))
+      : list.sort((a,b) => lastAt(b).localeCompare(lastAt(a)));
+  }
+  function filterHTML(inArchive){
+    const pool = st.slips.filter(s => archived(s, st.archiveAfterDays) === inArchive);
+    const count = v => v==='all' ? pool.length : pool.filter(s => status(s)===v).length;
+    const chip = (v,label) => `<button class="chip ${st.statusF===v?'on':''}" data-status="${esc(v)}">${esc(label)}<span class="n">${count(v)}</span></button>`;
+    return `<div class="filters">
+      <div class="chips">${chip('all','All')}${chip('not yet ordered','Needs ordering')}${chip('ordered','Ordered')}${chip("rcv'd","Received")}${chip('picked up','Picked up')}</div>
+      <div class="ranges">
+        <label>Taken between<input id="from" type="date" value="${esc(st.from)}" /></label>
+        <label>and<input id="to" type="date" value="${esc(st.to)}" /></label>
+        ${(st.from||st.to||st.statusF!=='all')?`<button class="btn ghost sm" data-act="clearFilters">Clear</button>`:''}
+      </div>
+    </div>`;
   }
   function listHTML(inArchive){
     return `
@@ -188,6 +238,7 @@
       <div class="f"><label for="q">${inArchive?'Search the archive':'Find a slip'}</label><input id="q" type="text" value="${esc(st.q)}" placeholder="name, phone, product, vendor, slip #" autocomplete="off" /></div>
       ${inArchive?'':`<button class="btn" data-act="goNew">New slip</button>`}
     </div>
+    ${filterHTML(inArchive)}
     ${inArchive ? `<p class="note" style="margin-top:0">Picked up more than ${st.archiveAfterDays} days ago. Nothing is ever deleted &mdash; open any slip to order it again.</p>` : ''}
     ${rowsHTML(filtered(inArchive))}
     ${API.standalone && !inArchive ? `<p class="note">Running on its own: slips save in this browser only. Once the Sheet is connected, everyone sees the same list.</p>` : ''}`;
@@ -276,7 +327,9 @@
   root.addEventListener('click', async e => {
     const t = e.target;
     const tab = t.closest('[data-tab]');
-    if (tab){ st.tab = tab.dataset.tab; st.openId = null; st.note=''; st.q=''; render(); return; }
+    if (tab){ st.tab = tab.dataset.tab; st.openId = null; st.note=''; st.q=''; st.statusF='all'; st.from=''; st.to=''; render(); return; }
+    const chip = t.closest('[data-status]');
+    if (chip){ st.statusF = chip.dataset.status; render(); return; }
     const open = t.closest('[data-open]');
     if (open){ st.openId = open.dataset.open; st.note=''; render(); window.scrollTo(0,0); return; }
     const act = t.closest('[data-act]');
@@ -286,6 +339,7 @@
     if (a==='goNew'){ st.tab='new'; st.openId=null; render(); return; }
     if (a==='back'){ st.openId=null; st.tab='list'; st.note=''; render(); return; }
     if (a==='clear'){ st.draft = blank(); st.note=''; render(); return; }
+    if (a==='clearFilters'){ st.statusF='all'; st.from=''; st.to=''; render(); return; }
     if (a==='print'){ window.print(); return; }
     if (a==='retry'){ st.note=''; await load(); return; }
     if (a==='unlock'){
@@ -321,6 +375,7 @@
 
   root.addEventListener('change', async e => {
     const el = e.target;
+    if (el.id === 'from' || el.id === 'to'){ st[el.id] = el.value; render(); return; }
     if (el.id === 'whoSel' || el.id === 'whoPick'){
       API.who = el.value; render(); return;
     }
