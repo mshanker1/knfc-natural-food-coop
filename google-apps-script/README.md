@@ -1,5 +1,11 @@
 **Google Apps Script — Drive Proxy & Consolidation**
 
+> This folder holds **two unrelated scripts**, each with its own deployment:
+> - `DriveProxy.gs` — inventory and site content CSVs, from a shared Drive folder. Documented below. Setup: `SETUP.md`.
+> - `SlipHandler.gs` — the staff special order slip, backed by its own Google Sheet in My Drive. Setup: `SETUP-SLIP.md`.
+>
+> They share no folder, no Sheet, and no deployment URL. Changing one does not affect the other.
+
 This folder contains `DriveProxy.gs`, a Google Apps Script used by the KNFC website to read CSV files from a Drive folder and to consolidate a weekly `reports_inventory_listings_assets.csv` into `inventory.csv` automatically.
 
 Purpose

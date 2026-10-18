@@ -1,70 +1,82 @@
-# KNFC Website — v2 Redesign (May 2026)
+# KNFC Website
 
-This folder contains a complete visual refresh of the KNFC website, built on top of your existing structure. **Drop these files into your `knfc-website/` folder, overwriting the matching files. No HTML structure or JavaScript hooks were broken — the inventory loader, content loader, contact forms, and Google Drive integration all still work.**
+The Kent Natural Foods Co-op website — static HTML, CSS, and vanilla JavaScript.
+No build step, no framework, no npm. Edit a file, refresh the browser.
 
----
+Local preview (needed for the inventory and content loaders, which can't read
+`file://` URLs):
 
-## What changed at a glance
+```bash
+python -m http.server 8000   # then open http://localhost:8000
+```
 
-- **New palette** sampled from the storefront — maroon awning, marigold yellow lettering, supporting forest + rust. Green moves to a supporting role.
-- **New typography** — DM Serif Display + Newsreader + DM Sans + DM Mono (replacing Playfair + Nunito). Loaded from Google Fonts, no install needed.
-- **A real sun mark** drawn from the emblem in the front window — now the brand anchor in the header lockup, footer, and as a backdrop in the dark "Why a co-op" section.
-- **Photos in place of placeholders** — storefront in the hero, tote in the manifesto strip, eight department thumbnails using your real photos.
-- **"Local. Before local was cool."** — your tagline from the totes is now the home page hero line and footer signature.
-- **Emoji icons removed** — replaced with monospace eyebrow labels everywhere.
-- **Founded date corrected to 1971** (matches the totes; the old README said 1972).
-- **All pages refreshed** — same content, new chrome, slightly tightened copy with the co-op's voice.
+## Pages
 
----
+| File | What it is |
+|---|---|
+| `index.html` | Home — hero, quick info, announcements |
+| `about.html` | History and mission |
+| `products.html` | Inventory browser with search and filters |
+| `membership.html` | Membership benefits and how to join |
+| `volunteer.html` | Volunteer opportunities |
+| `special-requests.html` | Public form — customers request a product |
+| `contact.html` | Contact form and location |
+| `special-order-slip.html` | **Staff only.** Digital special order slip. Not in the nav; reached by link, behind a passcode. |
 
-## Files in this folder
+Header, nav, and footer are injected by `js/main.js` — edit them there, once, not
+in each page.
 
-| File | What to do |
-| --- | --- |
-| `index.html` | Replace `knfc-website/index.html` |
-| `about.html` | Replace `knfc-website/about.html` |
-| `products.html` | Replace `knfc-website/products.html` |
-| `membership.html` | Replace `knfc-website/membership.html` |
-| `volunteer.html` | Replace `knfc-website/volunteer.html` |
-| `contact.html` | Replace `knfc-website/contact.html` |
-| `special-requests.html` | Replace `knfc-website/special-requests.html` |
-| `css/styles.css` | Replace `knfc-website/css/styles.css` |
-| `js/main.js` | Replace `knfc-website/js/main.js` (header, footer, store info) |
-| `js/content.js` | **Unchanged** — same file as your current one, included so the preview works. You can leave the live version alone. |
-| `js/inventory.js` | **Unchanged** — same as above. |
-| `images/` | A subset of the photos from `knfc-website/images/` used by the redesign. You already have these — no action needed. |
+## Shared code
 
----
+| File | What it does |
+|---|---|
+| `css/styles.css` | All site styles; design tokens in `:root` |
+| `css/slip.css` | Slip page only; built on the same tokens |
+| `js/main.js` | Header/footer injection, `STORE_INFO`, sun mark, nav, mobile menu, form validation |
+| `js/inventory.js` | Products page — reads `inventory.csv` from Drive |
+| `js/content.js` | Announcements, sales, staff picks, education — same Drive folder |
+| `js/slip.js` | The slip page. The field list at the top **is** the Sheet's column list |
+| `js/slip-api.js` | Slip data layer; `SLIP_API_URL` at the top |
 
-## Things to update before you publish
+## Google Apps Script
 
-I left a few clearly-marked placeholders for content only you can provide. Search for `[` in the HTML files to find them quickly. Specifically:
+Three independent scripts, three separate deployments. They share no data.
 
-1. **`js/main.js`** — `STORE_INFO.email` is set to a placeholder `hello@kentnaturalfoods.coop`. Update to your real address.
-2. **`membership.html`** — pricing for each tier (`$[XX]`, `$[XXX]`) and the member discount percentage `[X]%`.
-3. **`volunteer.html`** — time-commitment numbers, age requirements, discount details.
-4. **`about.html`** — board of directors names and bios.
-5. **`contact.html`** — paste the Google Maps embed iframe where it says "Google Map embed goes here".
+| Script | Backs | Setup |
+|---|---|---|
+| `DriveProxy.gs` | Inventory + site content CSVs, from a shared Drive folder | `google-apps-script/SETUP.md` |
+| `FormHandler.gs` | The public special-requests form | `google-apps-script/SETUP.md` |
+| `SlipHandler.gs` | The staff special order slip — its own Sheet in My Drive | `google-apps-script/SETUP-SLIP.md` |
 
----
+After editing any `.gs` file you must redeploy a **new version** for the change to
+take effect. The URL doesn't change.
 
-## Things to add when you have them
+## Design
 
-These are real photos and real names that will make the site feel less placeholder. None are blockers:
+Palette sampled from the storefront: maroon awning, marigold lettering, supporting
+forest and rust. Type is DM Serif Display + Newsreader + DM Sans + DM Mono, from
+Google Fonts. No emoji — monospace eyebrow labels instead. Founded 1971. Tagline:
+*Local. Before local was cool.*
 
-- **Staff portraits** for the Staff Picks feature (the products page reads them from `highlights.csv`).
-- **Real producer/farm names** in your sales and staff-picks CSVs. The redesign uses your existing CSV structure — just keep filling them in.
-- **A Google Map embed** on the contact page (replace the placeholder).
-- **A favicon** built from the sun mark. The SVG is in `js/main.js` (`SUN_MARK_SVG`) — easy to export as PNG/ICO at any size.
+## For staff
 
----
+- `BUYER_GUIDE.md` — how buyers update inventory, sales, announcements, and staff picks via Drive. Also `KNFC_Buyer_Guide.pdf`.
+- `google-apps-script/SETUP-SLIP.md` — standing up or troubleshooting the slip.
 
-## If something breaks
+## Still to fill in
 
-The redesign reuses every class name, ID, and form field name from your current site, so existing JavaScript should keep working. If you see anything odd:
+Placeholders in the HTML are marked with square brackets — search for `[` to find them.
 
-- **Inventory not loading?** Check `js/inventory.js` — unchanged from your current setup, including the Google Apps Script URL.
-- **Announcements not appearing?** Same — `js/content.js` is untouched.
-- **Header or footer missing?** The new `main.js` injects them. Make sure your HTML files still have `<div id="header-placeholder"></div>` and `<div id="footer-placeholder"></div>`.
+- `js/main.js` — `STORE_INFO.email` is a placeholder
+- `membership.html` — tier pricing and member discount percentage
+- `volunteer.html` — time commitment, age requirement, discount details
+- `about.html` — board of directors names and bios
+- `contact.html` — Google Maps embed
+- Staff portraits for Staff Picks; a favicon from the sun mark (`SUN_MARK_SVG` in `js/main.js`)
 
-Let me know if anything looks off — happy to fix.
+## Constraints
+
+No frameworks, no build tools, mobile-first, modern browsers only. `archive/` and
+`archive_untracked/` hold superseded work — nothing live reads from them.
+
+_Updated September 2026._

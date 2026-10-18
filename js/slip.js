@@ -25,7 +25,7 @@
     { k:'catalog',  label:'catalog #:',       sec:'buyer', w:'md' },
     { k:'ordered',  label:'date ordered:',    sec:'buyer', w:'md', type:'date' },
     { k:'received', label:"date rcv'd:",      sec:'buyer', w:'md', type:'date' },
-    { k:'notified', label:'when notified:',   sec:'buyer', w:'md' },
+    { k:'notified', label:'when notified:',   sec:'buyer', w:'md', type:'date' },
     { k:'price',    label:'price:',           sec:'buyer', w:'md' },
     { k:'amtdue',   label:'amt. due:',        sec:'buyer', w:'md' }
   ];
@@ -58,6 +58,7 @@
      slip to see how far along it is. */
   function status(s){
     if (s.pickedUp) return 'picked up';
+    if (s.notified) return 'notified';
     if (s.received) return "rcv'd";
     if (s.ordered) return 'ordered';
     return 'not yet ordered';
@@ -182,7 +183,7 @@
     const x = parseD(d);
     return x ? `${x.getMonth()+1}/${x.getDate()}/${String(x.getFullYear()).slice(2)}` : '';
   };
-  const STATUSES = ['not yet ordered','ordered',"rcv'd",'picked up'];
+  const STATUSES = ['not yet ordered','ordered',"rcv'd",'notified','picked up'];
 
   function ageHTML(s){
     if (s.pickedUp || s.received) return `<span class="sub">${esc(shortDate(lastAt(s))||'—')}</span>`;
@@ -224,7 +225,7 @@
     const count = v => v==='all' ? pool.length : pool.filter(s => status(s)===v).length;
     const chip = (v,label) => `<button class="chip ${st.statusF===v?'on':''}" data-status="${esc(v)}">${esc(label)}<span class="n">${count(v)}</span></button>`;
     return `<div class="filters">
-      <div class="chips">${chip('all','All')}${chip('not yet ordered','Needs ordering')}${chip('ordered','Ordered')}${chip("rcv'd","Received")}${chip('picked up','Picked up')}</div>
+      <div class="chips">${chip('all','All')}${chip('not yet ordered','Needs ordering')}${chip('ordered','Ordered')}${chip("rcv'd","Received")}${chip('notified','Notified')}${chip('picked up','Picked up')}</div>
       <div class="ranges">
         <label>Taken between<input id="from" type="date" value="${esc(st.from)}" /></label>
         <label>and<input id="to" type="date" value="${esc(st.to)}" /></label>

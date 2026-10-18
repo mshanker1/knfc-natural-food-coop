@@ -6,7 +6,7 @@ This guide is for KNFC buyers and staff who need to update sales, announcements,
 
 ### Inventory — automatic, no action needed
 
-Product inventory on the website is **pulled directly from the POS system via API and refreshed every hour**. Stock levels, prices, and product names are always up to date. You do not need to export, edit, or upload an inventory file.
+Product inventory on the website is **pulled directly from the POS system via API and refreshed every 15–30 minutes**. Stock levels, prices, and product names are always up to date. You do not need to export, edit, or upload an inventory file.
 
 ### Everything else — managed via Google Drive
 
@@ -18,15 +18,15 @@ Sales flyers, announcements, staff picks, and educational content come from CSV 
 
 ## At a Glance — What to Update and When
 
-> **Inventory is automatic** — you never need to touch it. The website pulls stock levels and prices directly from the POS system every hour.
+> **Inventory is automatic** — you never need to touch it. The website pulls stock levels and prices directly from the POS system every 15–30 minutes.
 
 The only files you ever edit are the four below. Each lives in the **KNFC Website Files** folder on Google Drive.
 
 | File | Controls | When to update | Columns to fill in |
 |------|----------|----------------|--------------------|
 | **sales.csv** | Monthly sales on the Products page | Monthly (or whenever a sale starts/ends) | Item, Sale Price, Active (yes/no) |
-| **announcements.csv** | Banners on the homepage | Whenever there's news | Title, Message, Date, Active (yes/no) |
-| **highlights.csv** | Staff picks on the Products page | Monthly | Item name, Description, Department, Active (yes/no) |
+| **announcements.csv** | Banners on the homepage | Whenever there's news | Title, Body, Date, Category, Active (yes/no) |
+| **highlights.csv** | Staff picks on the Products page | Monthly | Department, Item_Name, Description, Why_We_Love_It, Active (yes/no) |
 | **education.csv** | Articles in the "Learn" section | As needed | Title, Content, Category, Active (yes/no) |
 
 **The golden rule:** set a row's `Active` column to **no** to hide it, **yes** to show it. You never need to delete rows — just switch the flag.
@@ -54,7 +54,7 @@ The website reflects your changes within about 30 seconds.
 
 | File | Purpose | Update Frequency | Who updates it |
 |------|---------|------------------|----------------|
-| ~~inventory.csv~~ | ~~Product inventory~~ | **Auto-synced from POS hourly** | **POS system (automatic)** |
+| ~~inventory.csv~~ | ~~Product inventory~~ | **Auto-synced from POS every 15–30 min** | **POS system (automatic)** |
 | **sales.csv** | Monthly sales | Monthly | Buyers |
 | **announcements.csv** | Homepage announcements | As needed | Staff |
 | **highlights.csv** | Staff picks by department | Monthly | Staff |
@@ -116,16 +116,17 @@ One row per sale item. Only rows with `Active = yes` appear on the website. Upda
 |--------|----------|--------|---------|
 | Item | Required | Text | GT's Gingerade Kombucha 16oz |
 | Description | Optional | Text | Member price this week only |
-| Sale_Price | Required | Number | 3.99 |
-| Regular_Price | Optional | Number | 4.69 |
+| Sale_Price | Required | Text, shown as typed | $3.99 |
+| Regular_Price | Optional | Text, shown as typed | $4.69 |
 | Start_Date | Optional | YYYY-MM-DD | 2026-06-15 |
 | End_Date | Optional | YYYY-MM-DD | 2026-06-21 |
 | Active | Required | yes or no | yes |
 
 **Tips:**
 - Add one row per sale item — there is no limit on how many active rows you can have
-- Set `Active` to `no` when a sale ends — no need to delete the row
-- `Regular_Price` is optional but useful — it lets customers see the savings
+- Set `Active` to `no` when a sale ends — no need to delete the row. A sale does **not** switch off by itself on its `End_Date`
+- Prices appear exactly as typed, so include the `$`
+- `Regular_Price` is optional but useful — it shows crossed out next to the sale price
 - Dates are optional but help staff remember when sales started/ended
 
 ### 2. announcements.csv
@@ -137,12 +138,12 @@ One row per sale item. Only rows with `Active = yes` appear on the website. Upda
 | Title | Required | Text | Store Closure Notice |
 | Body | Required | Text | We'll be closed on July 4th |
 | Date | Required | YYYY-MM-DD | 2026-07-04 |
-| Category | Optional | info / alert / event | alert |
+| Category | Optional | general / event / policy | policy |
 | Active | Required | yes or no | yes |
 
 **Tips:**
 - The three most recent active announcements appear on the homepage
-- **Category** controls the badge colour: `info` = blue, `alert` = red, `event` = green
+- **Category** controls the badge colour. Use `general`, `event`, or `policy` — any other word shows a badge with no colour
 - Set old announcements to `Active = no` to remove them
 
 ### 3. highlights.csv (Staff Picks)
@@ -151,11 +152,10 @@ One row per sale item. Only rows with `Active = yes` appear on the website. Upda
 
 | Column | Required | Format | Example |
 |--------|----------|--------|---------|
-| Title | Required | Text | Staff Pick: GT's Kombucha |
-| Description | Required | Text | Our best-selling fermented tea |
 | Department | Required | Text | Beverages |
-| Recommended_By | Optional | Text | Sarah, Store Manager |
-| Image_URL | Optional | URL | https://... |
+| Item_Name | Required | Text | GT's Gingerade Kombucha |
+| Description | Required | Text | Our best-selling fermented tea |
+| Why_We_Love_It | Optional | Text | Not too sweet. — Sarah |
 | Active | Required | yes or no | yes |
 
 **Tips:**
@@ -205,7 +205,7 @@ One row per sale item. Only rows with `Active = yes` appear on the website. Upda
 
 ### Check the live inventory
 
-Just visit the **Products** page on the website — the inventory is pulled from the POS system every hour. There is nothing to upload or edit.
+Just visit the **Products** page on the website — the inventory is pulled from the POS system every 15–30 minutes. There is nothing to upload or edit.
 
 ---
 
@@ -228,10 +228,10 @@ Just visit the **Products** page on the website — the inventory is pulled from
 
 ### Inventory looks out of date on the website
 
-The inventory syncs from the POS every hour. If data looks stale:
-- Wait up to one hour for the next automatic sync
+The inventory syncs from the POS every 15–30 minutes. If data looks stale:
+- Wait half an hour for the next automatic sync
 - Hard-refresh the Products page
-- If the problem persists after an hour, contact your web developer — there may be an issue with the POS API connection
+- If the problem persists after an hour or two, contact your web developer — there may be an issue with the POS API connection
 
 ### Some products missing from inventory
 
@@ -268,7 +268,7 @@ If a field contains a quote character, double it up:
 - Don't manually edit or upload an `inventory.csv` — the POS API handles this automatically
 - Don't rename columns or change their order
 - Don't change filenames
-- Don't use commas inside numbers (`1000`, not `1,000`)
+- Don't use commas inside prices (`$1000`, not `$1,000`)
 - Don't put files in subfolders
 
 ---
@@ -278,20 +278,20 @@ If a field contains a quote character, double it up:
 ### sales.csv
 ```csv
 Item,Description,Sale_Price,Regular_Price,Start_Date,End_Date,Active
-GT's Gingerade Kombucha 16oz,Member price this week,3.99,4.69,2026-06-15,2026-06-21,yes
-Chocolove Dark Chocolate 3.2oz,,4.79,5.39,2026-06-15,2026-06-21,yes
+GT's Gingerade Kombucha 16oz,Member price this week,$3.99,$4.69,2026-06-15,2026-06-21,yes
+Chocolove Dark Chocolate 3.2oz,,$4.79,$5.39,2026-06-15,2026-06-21,yes
 ```
 
 ### announcements.csv
 ```csv
 Title,Body,Date,Category,Active
-Welcome,Welcome to the new KNFC website!,2026-06-01,info,yes
+Welcome,Welcome to the new KNFC website!,2026-06-01,general,yes
 ```
 
 ### highlights.csv
 ```csv
-Title,Description,Department,Recommended_By,Image_URL,Active
-Staff Pick: GT's Kombucha,Our best-seller in the cooler,Beverages,Sarah,,yes
+Department,Item_Name,Description,Why_We_Love_It,Active
+Beverages,GT's Gingerade Kombucha,Our best-seller in the cooler,Not too sweet. — Sarah,yes
 ```
 
 ### education.csv

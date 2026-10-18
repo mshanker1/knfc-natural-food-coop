@@ -24,7 +24,7 @@ This is a static site with no build, compile, or bundling steps. All changes are
 ## Architecture
 
 ### Page Structure
-The site consists of 7 main HTML pages that share a common structure:
+The site consists of 8 HTML pages that share a common structure:
 - **index.html** - Homepage with quick info and announcements
 - **about.html** - About the co-op, history, and mission
 - **products.html** - Inventory browser with search and filters
@@ -32,16 +32,21 @@ The site consists of 7 main HTML pages that share a common structure:
 - **volunteer.html** - Volunteer opportunities
 - **special-requests.html** - Form for customers to request products or place special orders
 - **contact.html** - Contact form and location info
+- **special-order-slip.html** - Staff-only digital special order slip (see "Special Order Slip" below)
 
-All pages use the same header/footer/nav structure - when updating these elements, you must update all 7 HTML files.
+Header, nav, and footer are **injected by `js/main.js`** into `<div id="header-placeholder">` and `<div id="footer-placeholder">` — edit them in one place, not per page. A new page only needs those two divs plus the shared CSS/JS includes.
 
 ### JavaScript Architecture
 
 **js/main.js** - Shared functionality across all pages:
+- Injects the header/nav/footer lockup and the sun mark (`SUN_MARK_SVG`)
+- `STORE_INFO` — address, hours, phone, email in one object
 - Mobile menu toggle
 - Copyright year auto-update
 - Contact form validation
 - Smooth scrolling for anchor links
+
+**js/slip.js / js/slip-api.js** - The staff special order slip. `slip.js` renders the card and the slip list; the field list at the top of the file IS the column list for the Sheet. `slip-api.js` is the data layer — it talks to `SlipHandler.gs`, and falls back to `localStorage` when no endpoint is configured.
 
 **js/inventory.js** - Product inventory system with three data source options:
 - **Google Drive Folder mode** (RECOMMENDED): Fetches CSV files from a single Google Drive folder by filename - simplest for buyers
@@ -67,12 +72,12 @@ The inventory system is configured via constants at the top of `js/inventory.js`
 
 ### CSS Architecture
 
-All styles are in a single file: `css/styles.css`
+All styles are in `css/styles.css`, plus `css/slip.css` which is loaded only by `special-order-slip.html` and builds on the same tokens.
 
-**CSS Variables** (lines 6-49): Colors, fonts, spacing, shadows defined in `:root`
-- Primary colors: Natural greens (`--color-primary`, `--color-primary-light`, etc.)
-- Secondary colors: Earth tones (`--color-secondary`)
-- Typography: Playfair Display for headings, Nunito for body
+**CSS Variables**: Colors, fonts, spacing, shadows defined in `:root`
+- Palette sampled from the storefront (May 2026 redesign): maroon awning (`--color-maroon`), marigold (`--color-marigold`), supporting forest + rust. Green is a supporting color, not primary.
+- Typography: DM Serif Display + Newsreader (headings/serif body), DM Sans (UI), DM Mono (eyebrow labels, the slip). Loaded from Google Fonts.
+- No emoji icons anywhere — monospace eyebrow labels instead.
 
 **Mobile-First Approach**: Base styles are mobile, with desktop overrides in media queries.
 
@@ -119,7 +124,7 @@ The `escapeHtml()` function in `inventory.js:323-327` sanitizes all user-generat
 ## Common Tasks
 
 ### Updating Site-Wide Navigation
-Edit the `<nav class="main-nav">` section in all 7 HTML files. The structure must match across all pages for consistent experience.
+Edit the nav markup in `js/main.js` — it is injected into every page. Do not hand-edit nav in the HTML files. `special-order-slip.html` is intentionally left out of the public nav.
 
 ### Changing Color Scheme
 Edit CSS variables in `css/styles.css:6-49`. All colors throughout the site reference these variables.
@@ -182,10 +187,41 @@ Use local CSV mode when developing:
 
 ### Adding New Pages
 When adding pages:
-1. Copy header/nav/footer from existing page
-2. Update active nav link (`class="active"`)
-3. Include `css/styles.css` and `js/main.js`
-4. Add page link to nav in all other pages
+1. Include `<div id="header-placeholder"></div>` and `<div id="footer-placeholder"></div>`
+2. Include `css/styles.css` and `js/main.js`
+3. Add the page link to the nav array in `js/main.js` (once, not per page)
+
+## Special Order Slip
+
+`special-order-slip.html` is the digital version of the co-op's paper special-order
+card — the same fields in the same printed order, in the same two sections (front,
+then "BELOW FOR BUYER USE ONLY"), plus the ledger grid from the back. Staff-only,
+reached by link and gated behind a passcode; not in the public nav.
+
+```
+special-order-slip.html
+css/slip.css
+js/slip.js                      ← field list at the top; edit there to change the card
+js/slip-api.js                  ← Sheet endpoint + passcode config at the top
+google-apps-script/SlipHandler.gs
+```
+
+- Backed by its own Google Sheet in My Drive — **separate from the inventory Drive
+  folder and `DriveProxy.gs`.** The two systems share no code and no data.
+- Existing slips save as you type (~0.7s after the last keystroke). New slips are
+  written on Save.
+- The buyer half stays locked until someone picks their name from the staff list;
+  every change is logged with who and when.
+- Slips picked up more than 90 days ago move to an Archive tab. Nothing is deleted —
+  any slip can be reordered from ("Order this again"), which copies the front and
+  starts a clean buyer half.
+- The all-slips list filters by status (with counts), by date-taken range, and by
+  free text. "Needs ordering" sorts oldest first — that's the buyer's work queue.
+- Deploying/rotating the endpoint: see `google-apps-script/SETUP-SLIP.md`.
+
+**Removed:** the earlier `special-orders/` prototype (v2 — pricing engine, member
+lookup, markup tables) is no longer part of the site. Staff went with the slip.
+Don't restore it; pricing logic is deliberately out of scope for the slip.
 
 ## Deployment
 
@@ -200,6 +236,6 @@ No server-side processing required except for contact form submissions (requires
 
 - **No JavaScript Frameworks**: This is vanilla JavaScript. Do not introduce React, Vue, etc.
 - **No Build Tools**: No webpack, npm, or compilation. Keep it simple.
-- **Shared Header/Footer**: Changes to navigation/footer must be replicated across all 7 HTML files.
+- **Shared Header/Footer**: Header, nav, and footer live in `js/main.js` and are injected. Never duplicate them into the HTML files.
 - **Mobile-First**: Always test responsive behavior when making layout changes.
 - **Browser Compatibility**: Support modern browsers (Chrome, Firefox, Safari, Edge). No IE11 support needed.
