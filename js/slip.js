@@ -302,6 +302,15 @@
   }
 
   /* ── saving ───────────────────────────────────────────────────────── */
+  let toastTimer = null;
+  function toast(msg, bad){
+    let t = document.querySelector('.slip-toast');
+    if (!t){ t = document.createElement('div'); t.className = 'slip-toast'; t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); document.body.appendChild(t); }
+    t.textContent = msg; t.classList.toggle('bad', !!bad);
+    t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), bad ? 6000 : 2600);
+  }
+
   function queueSave(id, changes){
     Object.assign(pending, changes);
     st.saving = 'saving\u2026';
@@ -319,7 +328,8 @@
         st.saving = '';
       }
       const b = root.querySelector('.bar .saved');
-      if (b && API.state !== 'offline') b.textContent = `Slip #${id} \u00b7 ${st.saving || 'not saved'}`;
+      if (b && API.state !== 'offline'){ b.textContent = `Slip #${id} \u00b7 ${st.saving ? '\u2713 saved' : 'not saved'}`; b.classList.toggle('ok', !!st.saving); }
+      toast(st.saving ? `\u2713 Slip #${id} saved` : `Slip #${id} did not save \u2014 check your connection and try again`, !st.saving);
       if (API.state === 'offline') render();
     }, 700);
   }
@@ -355,11 +365,11 @@
       const d = st.draft;
       if (!d.name.trim() && !d.product.trim()){ st.note = 'Add at least a name or a product first.'; render(); return; }
       const r = await API.create(d);
-      if (!r || !r.ok){ st.note = 'Could not save — check the warning above.'; render(); return; }
+      if (!r || !r.ok){ st.note = 'Could not save — check the warning above.'; render(); toast('Slip did not save \u2014 check the warning above', true); return; }
       st.slips.unshift(r.slip || d);
       st.openId = (r.slip || d).id;
-      st.draft = blank(); st.note = 'Saved.';
-      render(); window.scrollTo(0,0); return;
+      st.draft = blank(); st.note = '';
+      render(); window.scrollTo(0,0); toast(`\u2713 Slip #${st.openId} saved`); return;
     }
     if (a==='reorder'){
       const s = st.slips.find(x => x.id === st.openId);
