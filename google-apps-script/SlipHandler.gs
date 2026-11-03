@@ -36,8 +36,16 @@ const SLIP_COLUMNS = [
   'member', 'name', 'phone', 'date', 'brand', 'product', 'size', 'quantity',
   'deposit', 'initials', 'comments',
   'vendor', 'catalog', 'ordered', 'received', 'notified', 'price', 'amtdue',
-  'pickedUp', 'pickedUpAt', 'ledger', 'reorderOf', 'updated', 'updatedBy'
+  'pickedUp', 'pickedUpAt', 'ledger', 'reorderOf', 'updated', 'updatedBy',
+  'cancelled', 'cancelledAt'      // added v2 — new columns always go on the end
 ];
+
+/* Bumped whenever the page needs something this script didn't used to do. The
+   page reads it and says so, rather than silently losing a Cancel. */
+const SCRIPT_VERSION = 2;
+
+/* The two ways a slip ends. Stored as TRUE/FALSE, each with a date. */
+const FLAG_COLUMNS = { pickedUp: 'pickedUpAt', cancelled: 'cancelledAt' };
 
 const SHEET_SLIPS = 'Slips';
 const SHEET_STAFF = 'Staff';
@@ -59,6 +67,7 @@ function setUp() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
   getOrCreateSheet_(ss, SHEET_SLIPS, SLIP_COLUMNS);
+  ensureColumns_();
 
   const staff = getOrCreateSheet_(ss, SHEET_STAFF, ['name', 'role']);
   if (staff.getLastRow() < 2) {
@@ -116,7 +125,12 @@ function route_(req) {
     case 'ping':
       return { ok: true, needsPasscode: !!scriptProp_('PASSCODE', '') };
     case 'list':
-      return { ok: true, slips: listSlips_(), staff: listStaff_(), archiveAfterDays: ARCHIVE_AFTER_DAYS };
+      ensureColumns_();
+      return { ok: true, slips: listSlips_(), staff: listStaff_(), archiveAfterDays: ARCHIVE_AFTER_DAYS,
+               version: SCRIPT_VERSION, stamp: getStamp_() };
+    case 'stamp':
+      // A very cheap "has anything changed?" so open pages can stay current.
+      return { ok: true, stamp: getStamp_(), version: SCRIPT_VERSION };
     case 'create':
       return createSlip_(req.slip || {}, req.who || '');
     case 'update':
@@ -144,7 +158,8 @@ function listSlips_() {
 function rowToSlip_(row) {
   const s = {};
   for (let c = 0; c < SLIP_COLUMNS.length; c++) s[SLIP_COLUMNS[c]] = row[c];
-  s.pickedUp = s.pickedUp === true || String(s.pickedUp).toUpperCase() === 'TRUE';
+  s.id = normId_(s.id);
+  for (const f in FLAG_COLUMNS) s[f] = s[f] === true || String(s[f]).toUpperCase() === 'TRUE';
   try { s.ledger = s.ledger ? JSON.parse(s.ledger) : []; } catch (err) { s.ledger = []; }
   return s;
 }
@@ -181,12 +196,14 @@ function createSlip_(slip, who) {
       const k = SLIP_COLUMNS[c];
       let v = slip[k];
       if (k === 'ledger') v = JSON.stringify(v || []);
-      if (k === 'pickedUp') v = v ? 'TRUE' : 'FALSE';
+      if (k in FLAG_COLUMNS) v = v ? 'TRUE' : 'FALSE';
       row.push(v === undefined || v === null ? '' : v);
     }
     sh.appendRow(row);
+    sh.getRange(sh.getLastRow(), 1).setNumberFormat('@').setValue(slip.id);
 
     log_(slip.id, who, 'slip created', '', (slip.name || '') + ' — ' + (slip.product || ''));
+    touch_();
     emailBuyer_(slip);
     return { ok: true, slip: slip };
   } finally {
@@ -213,7 +230,7 @@ function updateSlip_(id, changes, who) {
       if (c < 0 || key === 'id' || key === 'created') continue;
       let next = changes[key];
       if (key === 'ledger') next = JSON.stringify(next || []);
-      if (key === 'pickedUp') next = next ? 'TRUE' : 'FALSE';
+      if (key in FLAG_COLUMNS) next = next ? 'TRUE' : 'FALSE';
       if (String(row[c]) === String(next)) continue;
       log_(id, who, key, row[c], next);
       row[c] = next;
@@ -221,17 +238,44 @@ function updateSlip_(id, changes, who) {
     }
     if (!touched) return { ok: true, unchanged: true };
 
-    if (changes.pickedUp === true && !row[SLIP_COLUMNS.indexOf('pickedUpAt')]) {
-      row[SLIP_COLUMNS.indexOf('pickedUpAt')] = stamp_(new Date(), 'yyyy-MM-dd');
+    // Ticking a flag dates it; unticking clears the date.
+    for (const f in FLAG_COLUMNS) {
+      const at = SLIP_COLUMNS.indexOf(FLAG_COLUMNS[f]);
+      if (changes[f] === true && !row[at]) row[at] = stamp_(new Date(), 'yyyy-MM-dd');
+      if (changes[f] === false) row[at] = '';
     }
     row[SLIP_COLUMNS.indexOf('updated')]   = stamp_(new Date(), 'yyyy-MM-dd HH:mm');
     row[SLIP_COLUMNS.indexOf('updatedBy')] = who;
     range.setValues([row]);
+    touch_();
 
     return { ok: true, slip: rowToSlip_(row) };
   } finally {
     lock.releaseLock();
   }
+}
+
+/* Fills in headers for columns added since the Sheet was made (Cancelled), so
+   upgrading never needs a manual step. Only empty header cells are touched. */
+function ensureColumns_() {
+  const sh = sheet_(SHEET_SLIPS);
+  if (!sh) return;
+  if (sh.getMaxColumns() < SLIP_COLUMNS.length) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), SLIP_COLUMNS.length - sh.getMaxColumns());
+  }
+  const have = sh.getRange(1, 1, 1, SLIP_COLUMNS.length).getValues()[0];
+  for (let c = 0; c < SLIP_COLUMNS.length; c++) {
+    if (!have[c]) sh.getRange(1, c + 1).setValue(SLIP_COLUMNS[c]).setFontWeight('bold').setBackground('#f3ede3');
+  }
+}
+
+/* A change marker. Every write bumps it; open pages ask for it every few
+   seconds and only fetch the full list when it has moved. */
+function touch_() {
+  PropertiesService.getScriptProperties().setProperty('LAST_CHANGE', String(Date.now()));
+}
+function getStamp_() {
+  return scriptProp_('LAST_CHANGE', '0');
 }
 
 function nextId_(sh) {
@@ -245,11 +289,17 @@ function nextId_(sh) {
   return ('000' + (max + 1)).slice(-4);
 }
 
+// Sheets turns "0041" into 41, so match and display IDs by their number.
+function normId_(v) {
+  const n = parseInt(String(v).replace(/\D/g, ''), 10);
+  return isNaN(n) ? String(v) : ('000' + n).slice(-4);
+}
+
 function findRow_(sh, id) {
   if (sh.getLastRow() < 2) return -1;
   const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getDisplayValues();
   for (let i = 0; i < ids.length; i++) {
-    if (String(ids[i][0]) === String(id)) return i + 2;
+    if (normId_(ids[i][0]) === normId_(id)) return i + 2;
   }
   return -1;
 }

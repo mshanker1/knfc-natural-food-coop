@@ -1,7 +1,8 @@
 /* Digital Special Order Slip — the page.
    Still the paper card, typed. What the Sheet added: everyone sees the same
    slips, the buyer half asks who you are before you write in it, a slip can
-   be marked picked up, and a past slip can be ordered again.
+   be marked picked up or cancelled, a past slip can be ordered again, and
+   every screen quietly keeps itself current with the Sheet.
    No pricing math. That stays out of this. */
 (function(){
   const CFG = window.SLIP_CONFIG || {};
@@ -47,7 +48,7 @@
   const bare = html => html.replace(/^<div class="ln">/,'').replace(/<\/div>$/,'');
 
   function blank(){
-    const s = { id:'', ledger:[], pickedUp:false };
+    const s = { id:'', ledger:[], pickedUp:false, cancelled:false };
     FIELDS.forEach(f => s[f.k] = '');
     s.date = today();
     for (let i=0;i<LEDGER_ROWS;i++) s.ledger.push({date:'',deposit:'',initial:'',price:'',amount:''});
@@ -57,6 +58,7 @@
   /* Status is read off the card, not chosen — same as glancing at a paper
      slip to see how far along it is. */
   function status(s){
+    if (s.cancelled) return 'cancelled';
     if (s.pickedUp) return 'picked up';
     if (s.notified) return 'notified';
     if (s.received) return "rcv'd";
@@ -78,6 +80,9 @@
   /* Tucked away, never deleted: picked up and gone cold, by the age the
      Sheet decides. */
   function archived(s, days){
+    /* Cancelled is finished the moment it's ticked: out of the working list at
+       once, still searchable in the Archive, and untick-able if it was a slip. */
+    if (s.cancelled) return true;
     if (!s.pickedUp) return false;
     return daysSince(s.pickedUpAt || s.updated || s.created) >= (days || 90);
   }
@@ -85,13 +90,21 @@
   let st = {
     tab:'new', openId:null, q:'', statusF:'all', from:'', to:'', draft:blank(), note:'',
     slips:[], staff:[], archiveAfterDays:90,
-    loading:true, gate:false, gateError:'', unlockBuyer:false, saving:''
+    loading:true, gate:false, gateError:'', unlockBuyer:false,
+    cap:2,            // what the deployed Google script can do (1 = no Cancel yet)
+    stamp:'', syncedAt:null
   };
   const root = document.getElementById('slip-root');
   /* On the website the page-header and site chrome already say what this is,
      so the tool skips its own masthead and just shows the staff bar. */
   const EMBEDDED = root.dataset.embedded === '1';
-  let saveTimer = null, pending = {};
+  /* Saving: edits wait here, keyed by slip, until the Sheet confirms them.
+     Nothing leaves this object on failure, so a dropped connection can never
+     eat what someone typed. saveState drives the one status line. */
+  let saveTimer = null, retryTimer = null, pending = {};
+  let inflight = false, sendingId = null, saveId = null, saveState = '', warnedFail = false;
+  let refreshing = false, needsRender = false, lastRefresh = 0;
+  const recent = new Set();     // ids created here, until the Sheet lists them
 
   /* ── boot ─────────────────────────────────────────────────────────── */
   async function load(){
@@ -102,9 +115,55 @@
       st.slips = r.slips || [];
       st.staff = r.staff || [];
       st.archiveAfterDays = r.archiveAfterDays || 90;
+      st.cap = API.standalone ? 2 : (r.version || 1);
+      st.stamp = r.stamp || '';
+      st.syncedAt = new Date();
       st.gate = false;
     }
     st.loading = false; render();
+  }
+
+  /* ── staying current ──────────────────────────────────────────────── */
+  const typing = () => {
+    const a = document.activeElement;
+    return !!(a && root.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.type !== 'checkbox');
+  };
+  const clock = d => d ? d.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) : '';
+  function paintSynced(){
+    const el = root.querySelector('#syncedAt');
+    if (el) el.textContent = st.syncedAt ? `Up to date as of ${clock(st.syncedAt)}` : '';
+  }
+  /* Asks the Sheet a one-line question first ("has anything changed?") and only
+     fetches the whole list when the answer is yes, so leaving the page open all
+     day costs almost nothing. Anything with unsent edits is never overwritten. */
+  async function refresh(manual){
+    if (refreshing || st.loading || st.gate || API.standalone) return;
+    if (!manual && Date.now() - lastRefresh < 5000) return;
+    if (needsRender && !typing()){ needsRender = false; render(); }
+    refreshing = true; lastRefresh = Date.now();
+    try {
+      if (!manual){
+        const q = await API.call('stamp');
+        if (!q || (!q.ok && q.error === 'offline')) return;
+        if (q.ok && q.stamp !== undefined && q.stamp === st.stamp){ st.syncedAt = new Date(); paintSynced(); return; }
+      }
+      const r = await API.list();
+      if (!(r && r.ok)){ if (manual) toast('Could not refresh \u2014 check your connection', true); return; }
+      const local = new Map(st.slips.map(x => [x.id, x]));
+      const keep = id => local.has(id) && (pending[id] || sendingId === id);
+      const merged = (r.slips || []).map(x => keep(x.id) ? local.get(x.id) : x);
+      const have = new Set(merged.map(x => x.id));
+      st.slips.forEach(x => { if (recent.has(x.id) && !have.has(x.id)) merged.push(x); else if (have.has(x.id)) recent.delete(x.id); });
+      const changed = JSON.stringify(merged) !== JSON.stringify(st.slips) ||
+                      JSON.stringify(r.staff || []) !== JSON.stringify(st.staff);
+      st.slips = merged; st.staff = r.staff || st.staff;
+      st.archiveAfterDays = r.archiveAfterDays || st.archiveAfterDays;
+      st.cap = r.version || 1; st.stamp = r.stamp || '';
+      st.syncedAt = new Date();
+      if (changed){ if (typing()) needsRender = true; else render(); }
+      else paintSynced();
+      if (manual) toast('\u2713 Up to date');
+    } finally { refreshing = false; }
   }
   API.onStateChange(() => render());
 
@@ -156,6 +215,8 @@
       ${isNew ? '' : `
       <div class="pickrow">
         <label><input type="checkbox" data-pick="1" ${s.pickedUp?'checked':''} /> Picked up${s.pickedUpAt?` <span class="qt">on ${esc(s.pickedUpAt)}</span>`:''}</label>
+        <label><input type="checkbox" data-cancel="1" ${s.cancelled?'checked':''}${st.cap<2?' disabled':''} /> Cancelled${s.cancelledAt?` <span class="qt">on ${esc(s.cancelledAt)}</span>`:''}</label>
+        <span class="qt hint">${st.cap<2 ? 'Cancel needs the updated Google script (see the setup guide).' : 'Cancelled slips leave the working list and move to the Archive.'}</span>
       </div>`}
       <div class="back">
         <h3>Back of card</h3>
@@ -168,9 +229,10 @@
     <div class="bar">
       ${isNew
         ? `<button class="btn" data-act="create"${off?' disabled':''}>Save slip</button><button class="btn ghost" data-act="clear">Clear</button>`
-        : `<button class="btn ghost" data-act="reorder">Order this again</button>
+        : `<button class="btn ghost" data-act="reorder" title="Copies the customer and product onto a fresh slip. This slip stays as it is.">Start a new slip from this one</button>
            <button class="btn ghost" data-act="print">Print</button>
-           <span class="saved">Slip #${esc(s.id)} &middot; ${off ? 'not saving \u2014 see the warning above' : st.saving || 'saves as you type'}</span>`}
+           <span class="saved ${saveClass(s.id)}" id="saveStatus">${esc(statusText(s.id))}</span>
+           <button class="btn sm" data-act="retrySave" ${saveShown(s.id)==='failed'?'':'hidden'}>Try saving again</button>`}
       ${st.note ? `<span class="saved">${esc(st.note)}</span>` : ''}
     </div>`;
   }
@@ -183,7 +245,7 @@
     const x = parseD(d);
     return x ? `${x.getMonth()+1}/${x.getDate()}/${String(x.getFullYear()).slice(2)}` : '';
   };
-  const STATUSES = ['not yet ordered','ordered',"rcv'd",'notified','picked up'];
+  const STATUSES = ['not yet ordered','ordered',"rcv'd",'notified','picked up','cancelled'];
 
   function ageHTML(s){
     if (s.pickedUp || s.received) return `<span class="sub">${esc(shortDate(lastAt(s))||'—')}</span>`;
@@ -198,7 +260,7 @@
         <span><span class="who">${esc(s.name||'(no name)')}</span><span class="meta">${esc(s.phone||'no phone')} &middot; #${esc(s.id)}</span></span>
         <span><span class="what">${esc(s.product||'(no product)')}</span><span class="sub">${[s.brand,s.size,s.quantity&&('qty '+s.quantity)].filter(Boolean).map(esc).join(' &middot; ')||'&mdash;'}</span></span>
         <span class="when"><span class="d">${esc(shortDate(s.date)||'—')}</span>${ageHTML(s)}</span>
-        <span class="stat ${status(s)==='not yet ordered'?'todo':''}">${esc(status(s))}</span>
+        <span class="stat ${status(s)==='not yet ordered'?'todo':status(s)==='cancelled'?'cancelled':''}">${esc(status(s))}</span>
       </button>`).join('')}</div>`;
   }
   function filtered(inArchive){
@@ -225,7 +287,7 @@
     const count = v => v==='all' ? pool.length : pool.filter(s => status(s)===v).length;
     const chip = (v,label) => `<button class="chip ${st.statusF===v?'on':''}" data-status="${esc(v)}">${esc(label)}<span class="n">${count(v)}</span></button>`;
     return `<div class="filters">
-      <div class="chips">${chip('all','All')}${chip('not yet ordered','Needs ordering')}${chip('ordered','Ordered')}${chip("rcv'd","Received")}${chip('notified','Notified')}${chip('picked up','Picked up')}</div>
+      <div class="chips">${chip('all','All')}${chip('not yet ordered','Needs ordering')}${chip('ordered','Ordered')}${chip("rcv'd","Received")}${chip('notified','Notified')}${chip('picked up','Picked up')}${inArchive?chip('cancelled','Cancelled'):''}</div>
       <div class="ranges">
         <label>Taken between<input id="from" type="date" value="${esc(st.from)}" /></label>
         <label>and<input id="to" type="date" value="${esc(st.to)}" /></label>
@@ -240,7 +302,7 @@
       ${inArchive?'':`<button class="btn" data-act="goNew">New slip</button>`}
     </div>
     ${filterHTML(inArchive)}
-    ${inArchive ? `<p class="note" style="margin-top:0">Picked up more than ${st.archiveAfterDays} days ago. Nothing is ever deleted &mdash; open any slip to order it again.</p>` : ''}
+    ${inArchive ? `<p class="note" style="margin-top:0">Picked up more than ${st.archiveAfterDays} days ago, or cancelled. Nothing is ever deleted &mdash; open any slip to order it again.</p>` : ''}
     ${rowsHTML(filtered(inArchive))}
     ${API.standalone && !inArchive ? `<p class="note">Running on its own: slips save in this browser only. Once the Sheet is connected, everyone sees the same list.</p>` : ''}`;
   }
@@ -296,6 +358,7 @@
         <button class="tab ${st.tab==='new'&&!open?'on':''}" data-tab="new">New slip</button>
         <button class="tab ${(st.tab==='list'||open)?'on':''}" data-tab="list">All slips<span class="n">${activeCount}</span></button>
         ${archCount?`<button class="tab ${st.tab==='archive'?'on':''}" data-tab="archive">Archive<span class="n">${archCount}</span></button>`:''}
+        ${API.standalone ? '' : `<span class="sync"><span id="syncedAt">${st.syncedAt ? `Up to date as of ${clock(st.syncedAt)}` : ''}</span><button class="btn ghost sm" data-act="refresh">Refresh</button></span>`}
       </div>`}
       ${body}
     </div>`;
@@ -311,27 +374,67 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), bad ? 6000 : 2600);
   }
 
+  /* What the status line says. It only ever describes the slip on screen, and
+     only ever one thing: saving, saved, or NOT saved. */
+  function saveShown(id){
+    if (API.state === 'offline') return 'failed';
+    return (saveId === id) ? saveState : '';
+  }
+  function statusText(id){
+    switch (saveShown(id)){
+      case 'dirty': case 'saving': return `Slip #${id} \u00b7 saving\u2026`;
+      case 'saved':  return `Slip #${id} \u00b7 \u2713 all changes saved`;
+      case 'failed': return `Slip #${id} \u00b7 NOT saved yet \u2014 keeping your changes and trying again`;
+      default:       return `Slip #${id} \u00b7 saved \u2014 changes save as you type`;
+    }
+  }
+  const saveClass = id => ({ saved:'ok', failed:'bad' }[saveShown(id)] || '');
+  function paintStatus(){
+    const el = root.querySelector('#saveStatus');
+    if (!el || !st.openId) return;
+    el.textContent = statusText(st.openId);
+    el.className = 'saved ' + saveClass(st.openId);
+    const rb = root.querySelector('[data-act="retrySave"]');
+    if (rb) rb.hidden = saveShown(st.openId) !== 'failed';
+  }
+
   function queueSave(id, changes){
-    Object.assign(pending, changes);
-    st.saving = 'saving\u2026';
-    const bar = root.querySelector('.bar .saved');
-    if (bar) bar.textContent = `Slip #${id} \u00b7 saving\u2026`;
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(async () => {
-      const changes = pending; pending = {};
+    pending[id] = Object.assign(pending[id] || {}, changes);
+    saveId = id; saveState = 'dirty'; paintStatus();
+    clearTimeout(saveTimer); clearTimeout(retryTimer);
+    saveTimer = setTimeout(flush, 700);
+  }
+
+  /* One request at a time. Whatever is typed while a request is out simply
+     waits its turn, so "saved" can never be shown while edits are still unsent. */
+  async function flush(){
+    clearTimeout(retryTimer);
+    if (inflight) return;
+    const ids = Object.keys(pending);
+    if (!ids.length) return;
+    inflight = true; saveState = 'saving'; saveId = ids[0]; paintStatus();
+    let failed = false, passcode = false;
+    for (const id of ids){
+      const changes = pending[id]; delete pending[id];
+      sendingId = id; saveId = id;
       const r = await API.update(id, changes);
-      if (r && r.ok){
-        st.saving = 'saved';
-        const s = st.slips.find(x => x.id === id);
-        if (s) Object.assign(s, changes);
-      } else {
-        st.saving = '';
+      sendingId = null;
+      if (!(r && r.ok)){
+        pending[id] = Object.assign({}, changes, pending[id] || {});   // newer typing wins
+        failed = true; passcode = !!(r && r.error === 'passcode'); break;
       }
-      const b = root.querySelector('.bar .saved');
-      if (b && API.state !== 'offline'){ b.textContent = `Slip #${id} \u00b7 ${st.saving ? '\u2713 saved' : 'not saved'}`; b.classList.toggle('ok', !!st.saving); }
-      toast(st.saving ? `\u2713 Slip #${id} saved` : `Slip #${id} did not save \u2014 check your connection and try again`, !st.saving);
-      if (API.state === 'offline') render();
-    }, 700);
+    }
+    inflight = false;
+    if (failed){
+      saveState = 'failed'; paintStatus();
+      if (passcode){ st.gate = true; render(); return; }
+      if (!warnedFail){ warnedFail = true; toast(`Slip #${saveId} has NOT saved \u2014 your changes are kept and it will keep trying`, true); }
+      retryTimer = setTimeout(flush, 6000);
+      return;
+    }
+    if (Object.keys(pending).length){ flush(); return; }
+    saveState = 'saved'; warnedFail = false; paintStatus();
+    toast(`\u2713 Slip #${saveId} saved`);
   }
 
   /* ── events ───────────────────────────────────────────────────────── */
@@ -353,6 +456,8 @@
     if (a==='clearFilters'){ st.statusF='all'; st.from=''; st.to=''; render(); return; }
     if (a==='print'){ window.print(); return; }
     if (a==='retry'){ st.note=''; await load(); return; }
+    if (a==='retrySave'){ flush(); return; }
+    if (a==='refresh'){ await refresh(true); return; }
     if (a==='unlock'){
       const code = (document.getElementById('pass')||{}).value || '';
       st.gateError = '';
@@ -368,7 +473,10 @@
       if (!r || !r.ok){ st.note = 'Could not save — check the warning above.'; render(); toast('Slip did not save \u2014 check the warning above', true); return; }
       st.slips.unshift(r.slip || d);
       st.openId = (r.slip || d).id;
-      st.draft = blank(); st.note = '';
+      recent.add(st.openId);
+      saveId = st.openId; saveState = 'saved';
+      st.draft = blank();
+      st.note = 'This slip is saved. It now saves by itself as you edit \u2014 there is no Save button to press again.';
       render(); window.scrollTo(0,0); toast(`\u2713 Slip #${st.openId} saved`); return;
     }
     if (a==='reorder'){
@@ -390,13 +498,26 @@
     if (el.id === 'whoSel' || el.id === 'whoPick'){
       API.who = el.value; render(); return;
     }
-    if (el.dataset.pick){
+    /* Picked up and Cancelled are the two ways a slip ends, so ticking one
+       unticks the other. Shown at once, put back if the Sheet says no. */
+    if (el.dataset.pick || el.dataset.cancel){
       const s = st.slips.find(x => x.id === st.openId);
       if (!s) return;
-      s.pickedUp = el.checked;
-      if (el.checked && !s.pickedUpAt) s.pickedUpAt = today();
-      const r = await API.update(s.id, { pickedUp: el.checked });
-      if (r && r.ok && r.slip) Object.assign(s, r.slip);
+      const key = el.dataset.pick ? 'pickedUp' : 'cancelled', other = key === 'pickedUp' ? 'cancelled' : 'pickedUp';
+      const FLAGS = ['pickedUp','pickedUpAt','cancelled','cancelledAt'];
+      const prev = {}; FLAGS.forEach(k => prev[k] = s[k]);
+      const changes = { [key]: el.checked };
+      s[key] = el.checked;
+      s[key+'At'] = el.checked ? (s[key+'At'] || today()) : '';
+      if (el.checked && s[other]){ s[other] = false; s[other+'At'] = ''; changes[other] = false; }
+      render();
+      const r = await API.update(s.id, changes);
+      if (r && r.ok){
+        if (r.slip) FLAGS.concat(['updated','updatedBy']).forEach(k => s[k] = r.slip[k]);   // not the text fields: they may have unsent edits
+      } else {
+        FLAGS.forEach(k => s[k] = prev[k]);
+        toast(`Could not save that — slip #${s.id} is unchanged. Check your connection and try again.`, true);
+      }
       render(); return;
     }
   });
@@ -419,6 +540,21 @@
       changes = { ledger: target.ledger };
     }
     if (isOpen && changes) queueSave(target.id, changes);
+  });
+
+  /* Re-render that was held back while someone was typing happens as soon as
+     they leave the field. */
+  root.addEventListener('focusout', () => setTimeout(() => {
+    if (needsRender && !typing()){ needsRender = false; render(); }
+  }, 0));
+
+  /* Keep every computer looking at the same Sheet, and never lose an unsent edit. */
+  setInterval(() => { if (!document.hidden) refresh(); }, 20000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+  window.addEventListener('focus', () => refresh());
+  window.addEventListener('online', () => flush());
+  window.addEventListener('beforeunload', e => {
+    if (inflight || Object.keys(pending).length){ e.preventDefault(); e.returnValue = ''; }
   });
 
   load();
