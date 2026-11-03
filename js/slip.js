@@ -204,18 +204,21 @@
 
   /* Every slip in the same chain of "start a new slip from this one", oldest
      first: the record of what a repeat order looked like each time. */
+  /* The Sheet turns "0066" into 66 in the re-ordered-from column, so compare
+     slip numbers by value, not by how they happen to be written. */
+  const nid = v => { const n = parseInt(String(v == null ? '' : v).replace(/\D/g,''), 10); return isNaN(n) ? '' : ('000' + n).slice(-4); };
   function familyOf(s){
-    const byId = new Map(st.slips.map(x => [x.id, x]));
-    let root = s, seen = new Set([s.id]);
-    while (root.reorderOf && byId.has(root.reorderOf) && !seen.has(root.reorderOf)){
-      root = byId.get(root.reorderOf); seen.add(root.id);
+    const byId = new Map(st.slips.map(x => [nid(x.id), x]));
+    let root = s, seen = new Set([nid(s.id)]);
+    while (nid(root.reorderOf) && byId.has(nid(root.reorderOf)) && !seen.has(nid(root.reorderOf))){
+      root = byId.get(nid(root.reorderOf)); seen.add(nid(root.id));
     }
     const out = [], queue = [root], got = new Set();
     while (queue.length){
       const cur = queue.shift();
       if (got.has(cur.id)) continue;
       got.add(cur.id); out.push(cur);
-      st.slips.filter(x => x.reorderOf === cur.id).forEach(x => queue.push(x));
+      st.slips.filter(x => nid(x.reorderOf) === nid(cur.id)).forEach(x => queue.push(x));
     }
     return out.sort((a,b) => (a.date||a.created||'').localeCompare(b.date||b.created||'') || a.id.localeCompare(b.id));
   }
@@ -257,7 +260,7 @@
         <tbody>${(s.ledger||[]).map((r,i)=>`<tr>${LEDGER_COLS.map(c=>`<td><input data-l="${i}" data-lk="${c.k}" type="text" value="${esc(r[c.k]||'')}" autocomplete="off" aria-label="${esc(c.label)} row ${i+1}" /></td>`).join('')}</tr>`).join('')}</tbody></table>
       </div>
       ${isNew ? '' : historyHTML(s)}
-      ${isNew || !s.updated ? '' : `<p class="stamp">Last change ${esc(s.updated)}${s.updatedBy?` by ${esc(s.updatedBy)}`:''}${s.createdBy?` &middot; taken by ${esc(s.createdBy)}`:''}${s.reorderOf?` &middot; re-ordered from #${esc(s.reorderOf)}`:''}</p>`}
+      ${isNew || !s.updated ? '' : `<p class="stamp">Last change ${esc(s.updated)}${s.updatedBy?` by ${esc(s.updatedBy)}`:''}${s.createdBy?` &middot; taken by ${esc(s.createdBy)}`:''}${s.reorderOf?` &middot; re-ordered from #${esc(nid(s.reorderOf))}`:''}</p>`}
     </div>
     <div class="bar">
       ${isNew
