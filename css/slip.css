@@ -141,3 +141,15 @@ table.led tr td:last-child{border-right:none}
 .row .when .sub.late{color:var(--color-maroon)}
 .row .stat.cancelled{text-decoration:line-through}
 .row .stat.todo{color:var(--color-maroon);font-weight:600}
+
+/* ── history of this order ─────────────────────────── */
+.history{margin-top:28px;border-top:1px dashed var(--line);padding-top:20px}
+.history h3{font-family:var(--f-type);font-size:13.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin:0 0 3px;color:var(--color-ink)}
+.history .hint{font-family:var(--font-body);font-size:13px;color:var(--color-gray);margin:0 0 13px}
+table.hist{width:100%;border-collapse:collapse;font-family:var(--f-type);font-size:13px}
+table.hist th{font-family:var(--font-body);font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;text-align:left;color:var(--color-gray-dark);border-bottom:1px solid var(--color-ink);padding:0 8px 7px}
+table.hist td{border-bottom:1px solid var(--color-rule);padding:8px}
+table.hist tr.here td{background:var(--color-cream)}
+.linkbtn{background:none;border:none;padding:0;font:inherit;color:var(--color-maroon);text-decoration:underline;cursor:pointer}
+.history .qt{color:var(--color-gray)}
+@media (max-width:640px){.history{overflow-x:auto}}

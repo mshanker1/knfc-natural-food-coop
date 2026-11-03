@@ -202,6 +202,38 @@
     </div>`;
   }
 
+  /* Every slip in the same chain of "start a new slip from this one", oldest
+     first: the record of what a repeat order looked like each time. */
+  function familyOf(s){
+    const byId = new Map(st.slips.map(x => [x.id, x]));
+    let root = s, seen = new Set([s.id]);
+    while (root.reorderOf && byId.has(root.reorderOf) && !seen.has(root.reorderOf)){
+      root = byId.get(root.reorderOf); seen.add(root.id);
+    }
+    const out = [], queue = [root], got = new Set();
+    while (queue.length){
+      const cur = queue.shift();
+      if (got.has(cur.id)) continue;
+      got.add(cur.id); out.push(cur);
+      st.slips.filter(x => x.reorderOf === cur.id).forEach(x => queue.push(x));
+    }
+    return out.sort((a,b) => (a.date||a.created||'').localeCompare(b.date||b.created||'') || a.id.localeCompare(b.id));
+  }
+  function historyHTML(s){
+    const fam = familyOf(s);
+    if (fam.length < 2) return '';
+    return `<div class="history">
+      <h3>History of this order</h3>
+      <p class="hint">Every time this was ordered, oldest first. Open one to see exactly what was written then.</p>
+      <table class="hist"><thead><tr><th>Slip</th><th>Date</th><th>Product</th><th>Qty</th><th>Price</th><th>Amt. due</th><th>Status</th></tr></thead><tbody>
+      ${fam.map(x => `<tr class="${x.id===s.id?'here':''}">
+        <td>${x.id===s.id ? `#${esc(x.id)} <span class="qt">(this slip)</span>` : `<button class="linkbtn" data-open="${esc(x.id)}">#${esc(x.id)}</button>`}</td>
+        <td>${esc(shortDate(x.date)||'\u2014')}</td><td>${esc([x.brand,x.product].filter(Boolean).join(' ')||'\u2014')}${x.size?` <span class="qt">${esc(x.size)}</span>`:''}</td>
+        <td>${esc(x.quantity||'\u2014')}</td><td>${esc(x.price||'\u2014')}</td><td>${esc(x.amtdue||'\u2014')}</td><td>${esc(status(x))}</td></tr>`).join('')}
+      </tbody></table>
+    </div>`;
+  }
+
   function slipHTML(s, isNew){
     const lockBuyer = !API.who && !API.standalone;
     const off = API.state === 'offline';
@@ -224,6 +256,7 @@
         <table class="led"><thead><tr>${LEDGER_COLS.map(c=>`<th>${esc(c.label)}</th>`).join('')}</tr></thead>
         <tbody>${(s.ledger||[]).map((r,i)=>`<tr>${LEDGER_COLS.map(c=>`<td><input data-l="${i}" data-lk="${c.k}" type="text" value="${esc(r[c.k]||'')}" autocomplete="off" aria-label="${esc(c.label)} row ${i+1}" /></td>`).join('')}</tr>`).join('')}</tbody></table>
       </div>
+      ${isNew ? '' : historyHTML(s)}
       ${isNew || !s.updated ? '' : `<p class="stamp">Last change ${esc(s.updated)}${s.updatedBy?` by ${esc(s.updatedBy)}`:''}${s.createdBy?` &middot; taken by ${esc(s.createdBy)}`:''}${s.reorderOf?` &middot; re-ordered from #${esc(s.reorderOf)}`:''}</p>`}
     </div>
     <div class="bar">
