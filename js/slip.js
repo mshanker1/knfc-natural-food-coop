@@ -75,7 +75,7 @@
   /* Parse YYYY-MM-DD as a local date. Date.parse() treats it as UTC, which
      shows every date a day early in Ohio. */
   function parseD(d){
-    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d||'');
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate(d));
     return m ? new Date(+m[1], +m[2]-1, +m[3]) : null;
   }
   function daysSince(d){
@@ -297,7 +297,11 @@
   const STATUSES = ['not yet ordered','ordered',"rcv'd",'notified','picked up','cancelled'];
 
   function ageHTML(s){
-    if (s.pickedUp || s.received) return `<span class="sub">${esc(shortDate(lastAt(s))||'—')}</span>`;
+    /* A finished slip shows the date it finished, as typed on the slip, not the
+       date someone last touched it. */
+    if (s.cancelled) return `<span class="sub">cancelled ${esc(shortDate(s.cancelledAt || lastAt(s))||'—')}</span>`;
+    if (s.pickedUp)  return `<span class="sub">picked up ${esc(shortDate(s.pickedUpAt || lastAt(s))||'—')}</span>`;
+    if (s.received)  return `<span class="sub">${esc(shortDate(lastAt(s))||'—')}</span>`;
     const n = daysSince(s.date || s.created);
     const late = !s.ordered && n >= 7;
     return `<span class="sub ${late?'late':''}">${n<=0?'today':n===1?'1 day':n+' days'}${s.ordered?' old':' waiting'}</span>`;
