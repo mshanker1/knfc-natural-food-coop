@@ -43,7 +43,14 @@
   const LEDGER_ROWS = 6;
 
   const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const today = () => new Date().toISOString().slice(0,10);
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  /* A date box only understands YYYY-MM-DD; the Sheet sometimes hands back 11/3/2026. */
+  const isoDate = v => {
+    const t = String(v || '').trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(t)) return t.slice(0,10);
+    const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(t);
+    return m ? `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}` : '';
+  };
   const groupOf = k => GROUPS.find(g => g.includes(k));
   const bare = html => html.replace(/^<div class="ln">/,'').replace(/<\/div>$/,'');
 
@@ -249,9 +256,15 @@
       <div class="${lockBuyer?'locked':''}">${sectionHTML(s,'buyer',lockBuyer)}</div>
       ${isNew ? '' : `
       <div class="pickrow">
-        <label><input type="checkbox" data-pick="1" ${s.pickedUp?'checked':''} /> Picked up${s.pickedUpAt?` <span class="qt">on ${esc(s.pickedUpAt)}</span>`:''}</label>
-        <label><input type="checkbox" data-cancel="1" ${s.cancelled?'checked':''}${st.cap<2?' disabled':''} /> Cancelled${s.cancelledAt?` <span class="qt">on ${esc(s.cancelledAt)}</span>`:''}</label>
-        <span class="qt hint">${st.cap<2 ? 'Cancel needs the updated Google script (see the setup guide).' : 'Cancelled slips leave the working list and move to the Archive.'}</span>
+        <span class="endopt">
+          <label><input type="checkbox" data-pick="1" ${s.pickedUp?'checked':''} /> Picked up</label>
+          ${s.pickedUp ? `<label class="on-date">on <input type="date" data-flagdate="pickedUp" value="${esc(isoDate(s.pickedUpAt))}" max="${today()}" aria-label="Date picked up" /></label>` : ''}
+        </span>
+        <span class="endopt">
+          <label><input type="checkbox" data-cancel="1" ${s.cancelled?'checked':''}${st.cap<2?' disabled':''} /> Cancelled</label>
+          ${s.cancelled ? `<label class="on-date">on <input type="date" data-flagdate="cancelled" value="${esc(isoDate(s.cancelledAt))}" max="${today()}" aria-label="Date cancelled" /></label>` : ''}
+        </span>
+        <span class="qt hint">${s.pickedUp||s.cancelled ? 'The date starts as today. If it happened earlier, change it here \u2014 it saves by itself.' : (st.cap<2 ? 'Cancel needs the updated Google script (see the setup guide).' : 'Cancelled slips leave the working list and move to the Archive.')}</span>
       </div>`}
       <div class="back">
         <h3>Back of card</h3>
@@ -534,6 +547,15 @@
     if (el.id === 'whoSel' || el.id === 'whoPick'){
       API.who = el.value; render(); return;
     }
+    /* Changing the date a slip was picked up (or cancelled) after the box was ticked. */
+    if (el.dataset.flagdate){
+      const s = st.slips.find(x => x.id === st.openId);
+      if (!s) return;
+      const at = el.dataset.flagdate + 'At';
+      s[at] = el.value;
+      queueSave(s.id, { [at]: el.value });
+      return;
+    }
     /* Picked up and Cancelled are the two ways a slip ends, so ticking one
        unticks the other. Shown at once, put back if the Sheet says no. */
     if (el.dataset.pick || el.dataset.cancel){
@@ -545,6 +567,7 @@
       const changes = { [key]: el.checked };
       s[key] = el.checked;
       s[key+'At'] = el.checked ? (s[key+'At'] || today()) : '';
+      if (el.checked) changes[key+'At'] = s[key+'At'];   // the date on this computer's clock, which the date box then lets you change
       if (el.checked && s[other]){ s[other] = false; s[other+'At'] = ''; changes[other] = false; }
       render();
       const r = await API.update(s.id, changes);
